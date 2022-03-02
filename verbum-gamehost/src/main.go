@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/centrifugal/centrifuge"
+	"github.com/davidreis97/verbum/verbum-gamehost/src/model"
 )
 
 func auth(h http.Handler) http.Handler {
@@ -46,6 +47,13 @@ func main() {
 			log.Printf("client disconnected")
 		})
 	})
+
+	room := model.NewRoom(node)
+
+	go room.StartGame()
+
+	log.Println("After StartGame")
+
 	if err := node.Run(); err != nil {
 		log.Fatal(err)
 	}
