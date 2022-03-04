@@ -102,11 +102,10 @@ func (r *Room) StartGame() {
 
 	log.Println("Game ended in room id " + strconv.FormatInt(r.id, 10))
 
-	/* // TODO - Missing Game Over Payload
 	r.state = OnGoing
-	_, err = r.SendGamePayload(GenToOnGoing(r.letters))
+	_, err = r.SendGamePayload(GenToFinished())
 	if err != nil {
 		log.Println(err.Error())
 		return
-	}*/
+	}
 }

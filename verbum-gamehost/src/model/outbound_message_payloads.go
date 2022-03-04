@@ -55,3 +55,13 @@ type scoreChange struct {
 func GenScoreChange(playerId int, scoreDiff int) scoreChange {
 	return scoreChange{Type: "ScoreChange", PlayerId: playerId, ScoreDiff: scoreDiff}
 }
+
+//ToFinished
+
+type toFinished struct {
+	Type string
+}
+
+func GenToFinished() toFinished {
+	return toFinished{Type: "ToFinished"}
+}
