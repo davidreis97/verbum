@@ -36,3 +36,11 @@ export interface ScoreChange {
 export interface ToFinished {
     Type: ToFinishedType
 }
+
+export interface Player {
+    id: number,
+    name: string,
+    score: number
+}
+
+export type GamePhase = "Connecting" | "Starting" | "OnGoing" | "Finished"

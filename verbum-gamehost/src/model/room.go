@@ -31,7 +31,7 @@ type Player struct {
 }
 
 type Room struct {
-	node    *centrifuge.Node // Useless having a ref to this in every Room - move to a global const
+	node    *centrifuge.Node
 	id      int64
 	letters []string
 	state   GameState
@@ -45,13 +45,14 @@ func NewRoom(node *centrifuge.Node) *Room {
 	r.letters = []string{"A", "B", "C", "D", "E", "F"}
 	r.state = Unstarted
 	r.node = node
+	r.players = make(map[int64]Player)
 
 	log.Println("Created new unstarted room with id " + strconv.FormatInt(r.id, 10))
 
 	return r
 }
 
-func (r *Room) AddPlayer(playerName string) {
+func (r *Room) AddPlayer(playerName string) error {
 	newPlayer := Player{
 		id:    rand.Int63(),
 		name:  playerName,
@@ -61,6 +62,8 @@ func (r *Room) AddPlayer(playerName string) {
 	r.players[newPlayer.id] = newPlayer
 
 	r.SendGamePayload(GenPlayerEnter(newPlayer.name, newPlayer.id))
+
+	return nil
 }
 
 func (r *Room) DropPlayer(playerId int64) {
@@ -75,7 +78,7 @@ func (r *Room) SendGamePayload(message interface{}) (*centrifuge.PublishResult, 
 		return nil, err
 	}
 	log.Println("Sent " + string(jsonMessage) + " in room id " + strconv.FormatInt(r.id, 10))
-	result, err := r.node.Publish("room_"+strconv.FormatInt(r.id, 36), jsonMessage, centrifuge.WithHistory(10, time.Minute))
+	result, err := r.node.Publish("room_"+strconv.FormatInt(r.id, 36), jsonMessage, centrifuge.WithHistory(9999, 4*time.Minute))
 	return &result, err
 }
 
@@ -108,4 +111,6 @@ func (r *Room) StartGame() {
 		log.Println(err.Error())
 		return
 	}
+
+	r.StartGame()
 }

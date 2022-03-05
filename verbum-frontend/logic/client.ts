@@ -2,13 +2,15 @@ import Centrifuge from "centrifuge";
 
 class GameHostClient {
     centrifuge: Centrifuge;
+    roomId: string;
 
-    constructor(){
-        this.centrifuge = new Centrifuge('ws://localhost:8000/connection/websocket');
+    constructor(name: string, gameId: number){
+        this.centrifuge = new Centrifuge('ws://localhost:8000/connection/websocket', {name});
+        this.roomId = "room_"+gameId;
     }
 
     onConnect(handler: (...args: any[]) => void){
-        this.centrifuge.on('connect', function(ctx){
+        this.centrifuge.on('connect', async (ctx) => {
             console.log('Connected over ' + ctx.transport);
             handler(ctx);
         });
@@ -21,9 +23,8 @@ class GameHostClient {
         });
     }
 
-    hookGameCallbacks(id: Number, handler: (...args: any[]) => void){
-        var roomId = "room_"+id;
-        this.centrifuge.subscribe(roomId, handler); 
+    hookGameCallbacks(handler: (...args: any[]) => void){
+        this.centrifuge.subscribe(this.roomId, handler);
     }
 
     connect(){

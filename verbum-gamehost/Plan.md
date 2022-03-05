@@ -19,3 +19,14 @@ Has:
 - The letters that are in play at that room
 - The current state of the game ("Starting" | "OnGoing" | "Finished")
 - Timers and callbacks to manage itself
+
+
+### LOGIN PROCEDURE ###
+
+CLIENT
+
+- Connect to server with username in cookie
+
+SERVER
+
+- Add player to the room
