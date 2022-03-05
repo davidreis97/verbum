@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -58,7 +59,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	wsHandler := centrifuge.NewWebsocketHandler(node, centrifuge.WebsocketConfig{})
+	wsHandler := centrifuge.NewWebsocketHandler(node, centrifuge.WebsocketConfig{CheckOrigin: CheckOrigin})
 	http.Handle("/connection/websocket", auth(wsHandler))
 
 	http.Handle("/", http.FileServer(http.Dir("./")))
@@ -67,4 +68,9 @@ func main() {
 	if err := http.ListenAndServe(":8000", nil); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func CheckOrigin(r *http.Request) bool {
+	fmt.Println("Received connection from " + r.Host)
+	return true
 }

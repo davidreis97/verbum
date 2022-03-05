@@ -41,7 +41,7 @@ type Room struct {
 func NewRoom(node *centrifuge.Node) *Room {
 	r := new(Room)
 
-	r.id = rand.Int63()
+	r.id = 0 //rand.Int63()
 	r.letters = []string{"A", "B", "C", "D", "E", "F"}
 	r.state = Unstarted
 	r.node = node

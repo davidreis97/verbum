@@ -11,7 +11,9 @@ import {
     Td,
     TableCaption,
 } from '@chakra-ui/react'
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import GameHostClient from "../../logic/client";
+import { MessageType } from "../../logic/messagePayloads";
 
 type GamePhase = "Connecting" | "Starting" | "OnGoing" | "Finished"
 
@@ -24,7 +26,54 @@ const Game: NextPage = () => {
         gamePhase: "OnGoing"
     });
     const router = useRouter();
-    const gameid = router.query['gameid'];
+    const gameIdString = router.query['gameId'];
+    var gameId = Number.parseInt(gameIdString as string);
+
+    const [client, setClient] = useState<GameHostClient | null>(null);
+
+    useEffect(() => {
+        if(gameId == NaN) return;
+
+        const newClient = new GameHostClient();
+        
+        newClient.onConnect(() => setState((state) => ({...state, gamePhase: "Starting"})));
+        newClient.onDisconnect(() => setState((state) => ({...state, gamePhase: "Connecting"})));
+        newClient.hookGameCallbacks(gameId, handler);
+        newClient.connect();
+
+        console.log("Setting client for room " + gameId);
+
+        setClient(newClient);
+    }, [gameId]);
+
+    function handler(ctx: any) {
+        var msgType = ctx?.data?.Type as MessageType;
+
+        if(msgType == null){
+            console.log("Strange game message!", ctx);
+            return;
+        }
+
+        switch(msgType){
+            case "PlayerEnter":
+                console.log("PlayerEnter", ctx);
+                break;
+            case "PlayerExit":
+                console.log("PlayerExit", ctx);
+                break;
+            case "ScoreChange":
+                console.log("ScoreChange", ctx);
+                break;
+            case "ToFinished":
+                console.log("ToFinished", ctx);
+                break;
+            case "ToOnGoing":
+                console.log("ToOnGoing", ctx);
+                break;
+            case "ToStarting":
+                console.log("ToStarting", ctx);
+        }
+    }
 
     return (
         <Center w='100%' h='100%'>
