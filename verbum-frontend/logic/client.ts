@@ -24,7 +24,15 @@ class GameHostClient {
     }
 
     hookGameCallbacks(handler: (...args: any[]) => void){
-        this.centrifuge.subscribe(this.roomId, handler);
+        //var client = this;
+
+        this.centrifuge.subscribe(this.roomId, handler, {since: {offset: 0, epoch:""}}).on('subscribe', async (ctx) => {
+            console.log("Subscribed to room " + this.roomId, ctx);
+            if(ctx.recovered === false){
+                console.warn("FAILED TO GET CLIENT UP TO DATE");
+            }
+            //console.log("History", await client.centrifuge.history(this.roomId, {limit: 1000}));
+        });
     }
 
     connect(){

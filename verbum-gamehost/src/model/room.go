@@ -33,23 +33,49 @@ type Player struct {
 type Room struct {
 	node    *centrifuge.Node
 	id      int64
-	letters []string
+	letters map[rune]bool
 	state   GameState
-	players map[int64]Player
+	players map[int64]*Player
 }
 
 func NewRoom(node *centrifuge.Node) *Room {
 	r := new(Room)
 
 	r.id = 0 //rand.Int63()
-	r.letters = []string{"A", "B", "C", "D", "E", "F"}
+	r.letters = make(map[rune]bool)
+	r.letters['A'] = true
+	r.letters['B'] = true
+	r.letters['C'] = true
+	r.letters['D'] = true
+	r.letters['E'] = true
+	r.letters['F'] = true
 	r.state = Unstarted
 	r.node = node
-	r.players = make(map[int64]Player)
+	r.players = make(map[int64]*Player)
 
 	log.Println("Created new unstarted room with id " + strconv.FormatInt(r.id, 10))
 
 	return r
+}
+
+func (r *Room) AttemptWord(playerId int64, word string) {
+	for _, char := range word {
+		_, isAcceptedChar := r.letters[char]
+
+		if !isAcceptedChar {
+			return
+		}
+	}
+
+	//TODO - Check if word is in list
+
+	r.AddPoints(playerId, len(word))
+}
+
+func (r *Room) AddPoints(playerId int64, scoreDiff int) {
+	r.players[playerId].score += scoreDiff
+
+	r.SendGamePayload(GenScoreChange(playerId, scoreDiff))
 }
 
 func (r *Room) AddPlayer(playerName string) error {
@@ -59,7 +85,7 @@ func (r *Room) AddPlayer(playerName string) error {
 		score: 0,
 	}
 
-	r.players[newPlayer.id] = newPlayer
+	r.players[newPlayer.id] = &newPlayer
 
 	r.SendGamePayload(GenPlayerEnter(newPlayer.name, newPlayer.id))
 
@@ -90,20 +116,30 @@ func (r *Room) StartGame() {
 		return
 	}
 
+	//log.Println("Game started in room id " + strconv.FormatInt(r.id, 10))
+
 	time.Sleep(STARTING_TIMER * time.Second)
 
 	r.state = OnGoing
-	_, err = r.SendGamePayload(GenToOnGoing(r.letters))
+
+	letters := make([]rune, len(r.letters))
+	i := 0
+	for k := range r.letters {
+		letters[i] = k
+		i++
+	}
+	_, err = r.SendGamePayload(GenToOnGoing(letters))
+
 	if err != nil {
 		log.Println(err.Error())
 		return
 	}
 
-	log.Println("Game started in room id " + strconv.FormatInt(r.id, 10))
+	//log.Println("Game ongoing in room id " + strconv.FormatInt(r.id, 10))
 
 	time.Sleep(ONGOING_TIMER * time.Second)
 
-	log.Println("Game ended in room id " + strconv.FormatInt(r.id, 10))
+	//log.Println("Game ended in room id " + strconv.FormatInt(r.id, 10))
 
 	r.state = OnGoing
 	_, err = r.SendGamePayload(GenToFinished())

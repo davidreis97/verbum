@@ -1,7 +1,7 @@
 import type { NextPage } from 'next'
 import { Box, Center, Input, Text, Container, Button } from '@chakra-ui/react'
 import { useState } from 'react';
-import { inBrowser, LS_USERNAME_KEY, LS_UUID_KEY } from '../logic/utils';
+import { inBrowser, LS_USERNAME_KEY } from '../logic/utils';
 
 const Home: NextPage = () => {
   var [state, setState] = useState<string>(inBrowser() ? localStorage?.getItem(LS_USERNAME_KEY) ?? "" : "")
@@ -9,10 +9,6 @@ const Home: NextPage = () => {
   function setLSUsername(username: string){
     if (inBrowser()) {
       localStorage.setItem(LS_USERNAME_KEY, username);
-
-      if(localStorage.getItem(LS_UUID_KEY) == null){
-        localStorage.setItem(LS_UUID_KEY, (Math.random() * Number.MAX_SAFE_INTEGER).toString())
-      }
     }
   }
 

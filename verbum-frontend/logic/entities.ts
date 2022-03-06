@@ -24,7 +24,7 @@ export interface PlayerExit {
 
 export interface ToOnGoing {
     Type: ToOnGoingType,
-    Letters: string[]
+    Letters: number[]
 }
 
 export interface ScoreChange {

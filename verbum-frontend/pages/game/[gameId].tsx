@@ -7,7 +7,7 @@ import { GamePhase, MessageType, Player, PlayerEnter, PlayerExit, ScoreChange, T
 import React from "react";
 import { ScoreTable } from "../../components/score";
 import { GameBox } from "../../components/gameBox";
-import { inBrowser, LS_USERNAME_KEY, LS_UUID_KEY } from "../../logic/utils";
+import { inBrowser, LS_USERNAME_KEY } from "../../logic/utils";
 
 type GameState = {
     gamePhase: GamePhase,
@@ -25,21 +25,21 @@ const Game: NextPage = () => {
     const gameIdString = router.query['gameId'];
     var gameId = Number.parseInt(gameIdString as string);
     var username: string;
-    var uuid: string;
 
     if(inBrowser()){
         username = localStorage.getItem(LS_USERNAME_KEY) ?? "";
-        uuid = localStorage.getItem(LS_UUID_KEY) ?? "";
-        if(username == "" || uuid == ""){
+        if(username == ""){
             router.push("/"); //TODO - Better feedback ("need username!") and redirect back to same game once username is filled
-            return <Box></Box>;
+            return <Box/>;
         }
     }
 
     useEffect(() => {
         if (isNaN(gameId) && typeof gameId === 'number') return;
 
-        const client = new GameHostClient(username + "/&&/" + uuid, gameId);
+        console.log("Creating new client");
+
+        const client = new GameHostClient(username, gameId);
 
         client.onConnect(() => setState((state) => ({ ...state, gamePhase: "Starting" })));
         client.onDisconnect(() => setState((state) => ({ ...state, gamePhase: "Connecting" })));
@@ -80,7 +80,7 @@ const Game: NextPage = () => {
         setState(s => ({
             ...s,
             gamePhase: "OnGoing",
-            letters: msg.Letters
+            letters: msg.Letters.map(n => String.fromCharCode(n))
         }));
     }
 
@@ -123,6 +123,7 @@ const Game: NextPage = () => {
             case "ToStarting":
                 console.log("ToStarting", ctx);
                 toStarting(ctx.data as ToStarting);
+                break;
         }
     }
 

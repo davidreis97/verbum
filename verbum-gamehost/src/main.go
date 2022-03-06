@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -20,18 +19,25 @@ func handler(h http.Handler) http.Handler {
 	})
 }
 
+func handleLog(e centrifuge.LogEntry) {
+	log.Printf("%s: %v", e.Message, e.Fields)
+}
+
 func main() {
-	node, err := centrifuge.New(centrifuge.Config{})
+	node, err := centrifuge.New(centrifuge.Config{
+		LogLevel:   centrifuge.LogLevelDebug,
+		LogHandler: handleLog,
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	room := model.NewRoom(node)
-
 	broker, _ := centrifuge.NewMemoryBroker(node, centrifuge.MemoryBrokerConfig{
-		HistoryMetaTTL: 4 * time.Minute,
+		HistoryMetaTTL: 5 * time.Minute,
 	})
 	node.SetBroker(broker)
+
+	room := model.NewRoom(node)
 
 	node.OnConnecting(func(ctx context.Context, evt centrifuge.ConnectEvent) (centrifuge.ConnectReply, error) {
 		return centrifuge.ConnectReply{
@@ -42,9 +48,9 @@ func main() {
 	})
 
 	node.OnConnect(func(client *centrifuge.Client) {
-		transportName := client.Transport().Name()
-		transportProto := client.Transport().Protocol()
-		log.Printf("client %s connected via %s (%s)", client.UserID(), transportName, transportProto)
+		// transportName := client.Transport().Name()
+		// transportProto := client.Transport().Protocol()
+		// log.Printf("client %s connected via %s (%s)", client.UserID(), transportName, transportProto)
 
 		client.OnSubscribe(func(e centrifuge.SubscribeEvent, cb centrifuge.SubscribeCallback) {
 			channelSplit := strings.Split(e.Channel, "_")
@@ -52,14 +58,14 @@ func main() {
 				_, err := strconv.Atoi(channelSplit[1])
 				if err == nil {
 					//TODO - Get the right game
-					log.Printf("client subscribes on channel %s", e.Channel)
-					cb(centrifuge.SubscribeReply{}, nil)
+					//log.Printf("client subscribes on channel %s", e.Channel)
+					cb(centrifuge.SubscribeReply{Options: centrifuge.SubscribeOptions{Position: true, Recover: true, RecoverSince: &centrifuge.StreamPosition{Offset: 0}}}, nil)
 					room.AddPlayer(client.UserID())
 					return
 				}
 			}
 
-			log.Println("Bad game subscription - " + e.Channel)
+			//log.Println("Bad game subscription - " + e.Channel)
 			cb(centrifuge.SubscribeReply{}, errors.New("bad game subscription"))
 		})
 
@@ -72,18 +78,16 @@ func main() {
 		})
 
 		client.OnPublish(func(e centrifuge.PublishEvent, cb centrifuge.PublishCallback) {
-			log.Printf("client publishes into channel %s: %s", e.Channel, string(e.Data))
-			cb(centrifuge.PublishReply{}, nil)
+			//log.Printf("client publishes into channel %s: %s", e.Channel, string(e.Data))
+			cb(centrifuge.PublishReply{}, errors.New("client publish disabled"))
 		})
 
 		client.OnDisconnect(func(e centrifuge.DisconnectEvent) {
-			log.Printf("client %s disconnected", client.UserID())
+			//log.Printf("client %s disconnected", client.UserID())
 		})
 	})
 
 	go room.StartGame()
-
-	log.Println("After StartGame")
 
 	if err := node.Run(); err != nil {
 		log.Fatal(err)
@@ -101,6 +105,6 @@ func main() {
 }
 
 func CheckOrigin(r *http.Request) bool {
-	fmt.Println("Received connection from " + r.Host)
+	//fmt.Println("Received connection from " + r.Host)
 	return true
 }
