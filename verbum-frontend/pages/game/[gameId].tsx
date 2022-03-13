@@ -43,7 +43,7 @@ const Game: NextPage = () => {
 
         var client = new GameHostClient(username, gameId);
 
-        client.onConnect(() => setState((state) => ({ ...state, gamePhase: "Starting" })));
+        //client.onConnect(() => setState((state) => ({ ...state, gamePhase: "Starting" })));
         client.onDisconnect(() => setState((state) => ({ ...state, gamePhase: "Connecting" })));
         client.hookGameCallbacks(handler);
         client.connect();
