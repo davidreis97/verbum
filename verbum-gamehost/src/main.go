@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -22,10 +24,19 @@ func handleLog(e centrifuge.LogEntry) {
 }
 
 func main() {
+	wordlist, err := LoadWordlist("wordlist.txt")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	//sort.Strings(*wordlist) //List should be sorted already. Any issues, uncomment here
+
 	node, err := centrifuge.New(centrifuge.Config{
 		LogLevel:   centrifuge.LogLevelDebug,
 		LogHandler: handleLog,
 	})
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -81,7 +92,7 @@ func main() {
 
 		client.OnRPC(func(e centrifuge.RPCEvent, cb centrifuge.RPCCallback) {
 			if e.Method == "WordAttempt" {
-				cb(*room.ProcessWordAttempt(&e.Data, clientId), nil)
+				cb(*room.ProcessWordAttempt(&e.Data, clientId, wordlist), nil)
 				return
 			}
 			cb(centrifuge.RPCReply{}, centrifuge.ErrorMethodNotFound)
@@ -113,4 +124,19 @@ func main() {
 func CheckOrigin(r *http.Request) bool {
 	//fmt.Println("Received connection from " + r.Host)
 	return true
+}
+
+func LoadWordlist(path string) (*[]string, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	var lines []string
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+	return &lines, scanner.Err()
 }

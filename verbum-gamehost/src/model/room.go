@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"log"
 	"math/rand"
+	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/centrifugal/centrifuge"
@@ -58,10 +60,10 @@ func NewRoom(node *centrifuge.Node) *Room {
 	return r
 }
 
-func (r *Room) ProcessWordAttempt(data *[]byte, playerId int64) *centrifuge.RPCReply {
+func (r *Room) ProcessWordAttempt(data *[]byte, playerId int64, wordlist *[]string) *centrifuge.RPCReply {
 	var attempt WordAttempt
 	json.Unmarshal(*data, &attempt)
-	valid, points := r.AttemptWord(playerId, attempt.Word)
+	valid, points := r.AttemptWord(playerId, attempt.Word, wordlist)
 
 	if valid {
 		r.AddPoints(playerId, points)
@@ -73,7 +75,7 @@ func (r *Room) ProcessWordAttempt(data *[]byte, playerId int64) *centrifuge.RPCR
 	}
 }
 
-func (r *Room) AttemptWord(playerId int64, word string) (bool, int) {
+func (r *Room) AttemptWord(playerId int64, word string, wordlist *[]string) (bool, int) {
 	for _, char := range word {
 		_, isAcceptedChar := r.letters[char]
 
@@ -82,7 +84,13 @@ func (r *Room) AttemptWord(playerId int64, word string) (bool, int) {
 		}
 	}
 
-	//TODO - Check if word is in list
+	i := sort.SearchStrings(*wordlist, strings.ToLower(word))
+
+	if i < 0 || i >= len(*wordlist) || (*wordlist)[i] != strings.ToLower(word) {
+		return false, 0 //Word is not valid english word
+	}
+
+	//TODO - Check player hasn't sent word yet
 
 	wordScore := len(word)
 
