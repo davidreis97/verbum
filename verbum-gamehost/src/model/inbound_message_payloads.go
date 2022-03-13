@@ -1,6 +1,7 @@
 package model
 
+// RPC "WordAttempt"
+
 type WordAttempt struct {
-	Type string
 	Word string
 }

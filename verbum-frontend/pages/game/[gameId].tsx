@@ -12,14 +12,16 @@ import { inBrowser, LS_USERNAME_KEY } from "../../logic/utils";
 type GameState = {
     gamePhase: GamePhase,
     players: Player[],
-    letters: string[]
+    letters: string[],
+    client: GameHostClient | null
 };
 
 const Game: NextPage = () => {
     const [state, setState] = useState<GameState>({
         gamePhase: "Connecting",
         players: [],
-        letters: []
+        letters: [],
+        client: null
     });
     const router = useRouter();
     const gameIdString = router.query['gameId'];
@@ -35,11 +37,11 @@ const Game: NextPage = () => {
     }
 
     useEffect(() => {
-        if (isNaN(gameId) && typeof gameId === 'number') return;
+        if (isNaN(gameId) && typeof gameId === 'number' || state.client != null) return;
 
         console.log("Creating new client");
 
-        const client = new GameHostClient(username, gameId);
+        var client = new GameHostClient(username, gameId);
 
         client.onConnect(() => setState((state) => ({ ...state, gamePhase: "Starting" })));
         client.onDisconnect(() => setState((state) => ({ ...state, gamePhase: "Connecting" })));
@@ -47,6 +49,8 @@ const Game: NextPage = () => {
         client.connect();
 
         console.log("Setting client for room " + gameId);
+
+        setState((state)=> ({...state, client: client}))
     }, [gameId]);
 
     function playerEnter(msg: PlayerEnter){
@@ -91,6 +95,14 @@ const Game: NextPage = () => {
         }));
     }
 
+    async function sendAttempt(word: string) : Promise<[boolean, number]>{
+        if(!state.client){
+            return [false, 0];
+        }
+
+        return state.client.attemptWord(word);
+    }
+
     function handler(ctx: any) {
         var msgType = ctx?.data?.Type as MessageType;
 
@@ -131,7 +143,7 @@ const Game: NextPage = () => {
         <Center w='100%' h='100%'>
             <Container maxW='container.lg'>
                 <Box borderWidth='1px' borderRadius='lg' display="flex">
-                    <GameBox gamePhase={state.gamePhase} letters={state.letters}/>
+                    <GameBox gamePhase={state.gamePhase} letters={state.letters} sendAttempt={sendAttempt}/>
                     <Divider h="auto" orientation="vertical" />
                     <ScoreTable players={state.players} />
                 </Box>

@@ -65,3 +65,24 @@ type toFinished struct {
 func GenToFinished() toFinished {
 	return toFinished{Type: "ToFinished"}
 }
+
+//WordApproved
+
+type wordApproved struct {
+	Type      string
+	ScoreDiff int
+}
+
+func GenWordApproved(scoreDiff int) wordApproved {
+	return wordApproved{Type: "WordApproved", ScoreDiff: scoreDiff}
+}
+
+//WordRejected
+
+type wordRejected struct {
+	Type string
+}
+
+func GenWordRejected() wordRejected {
+	return wordRejected{Type: "WordRejected"}
+}

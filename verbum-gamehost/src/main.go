@@ -2,11 +2,9 @@ package main
 
 import (
 	"context"
-	"errors"
 	"log"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/centrifugal/centrifuge"
@@ -52,21 +50,19 @@ func main() {
 		// transportProto := client.Transport().Protocol()
 		// log.Printf("client %s connected via %s (%s)", client.UserID(), transportName, transportProto)
 
+		var clientId int64
+
 		client.OnSubscribe(func(e centrifuge.SubscribeEvent, cb centrifuge.SubscribeCallback) {
-			channelSplit := strings.Split(e.Channel, "_")
-			if len(channelSplit) == 2 {
-				_, err := strconv.Atoi(channelSplit[1])
-				if err == nil {
-					//TODO - Get the right game
-					//log.Printf("client subscribes on channel %s", e.Channel)
-					cb(centrifuge.SubscribeReply{Options: centrifuge.SubscribeOptions{Position: true, Recover: true, RecoverSince: &centrifuge.StreamPosition{Offset: 0}}}, nil)
-					room.AddPlayer(client.UserID())
-					return
-				}
+			roomID, err := strconv.Atoi(e.Channel)
+
+			if err != nil {
+				cb(centrifuge.SubscribeReply{}, centrifuge.ErrorBadRequest)
+				return
 			}
 
-			//log.Println("Bad game subscription - " + e.Channel)
-			cb(centrifuge.SubscribeReply{}, errors.New("bad game subscription"))
+			log.Printf("Subscription on room id %d", roomID)
+			clientId = room.AddPlayer(client.UserID())
+			cb(centrifuge.SubscribeReply{Options: centrifuge.SubscribeOptions{Position: true, Recover: true, RecoverSince: &centrifuge.StreamPosition{Offset: 0}}}, nil)
 		})
 
 		client.OnHistory(func(e centrifuge.HistoryEvent, cb centrifuge.HistoryCallback) {
@@ -79,10 +75,20 @@ func main() {
 
 		client.OnPublish(func(e centrifuge.PublishEvent, cb centrifuge.PublishCallback) {
 			//log.Printf("client publishes into channel %s: %s", e.Channel, string(e.Data))
-			cb(centrifuge.PublishReply{}, errors.New("client publish disabled"))
+			log.Printf("Unexpected attempt to publish to channel %s: %s", e.Channel, string(e.Data))
+			cb(centrifuge.PublishReply{}, centrifuge.ErrorBadRequest)
+		})
+
+		client.OnRPC(func(e centrifuge.RPCEvent, cb centrifuge.RPCCallback) {
+			if e.Method == "WordAttempt" {
+				cb(*room.ProcessWordAttempt(&e.Data, clientId), nil)
+				return
+			}
+			cb(centrifuge.RPCReply{}, centrifuge.ErrorMethodNotFound)
 		})
 
 		client.OnDisconnect(func(e centrifuge.DisconnectEvent) {
+			room.DropPlayer(clientId)
 			//log.Printf("client %s disconnected", client.UserID())
 		})
 	})

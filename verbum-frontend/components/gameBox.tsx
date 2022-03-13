@@ -1,5 +1,5 @@
 import { Box, Center, Divider, Input, Wrap, WrapItem, Text } from "@chakra-ui/react";
-import React from "react";
+import React, { useState } from "react";
 import { GamePhase } from "../logic/entities";
 
 const LetterBox = (props: { letter: string }) => {
@@ -12,7 +12,19 @@ const LetterBox = (props: { letter: string }) => {
     );
 }
 
-export const GameBox = React.memo((props: {gamePhase: GamePhase, letters: string[]}) => {
+export const GameBox = React.memo((props: { gamePhase: GamePhase, letters: string[], sendAttempt: (word: string) => Promise<[boolean, number]> }) => {
+    var [word, setWord] = useState<string>("");
+
+    if (props.gamePhase != "OnGoing") {
+        word = "";
+    }
+
+    function processEnter(e: React.KeyboardEvent<HTMLInputElement>): void {
+        if (e.key == "Enter" && word.length > 0){
+            props.sendAttempt(word);
+        }
+    }
+
     return (
         <Box flexGrow="1">
             <Box padding="0 1em 0 1em" display="flex" width="auto" style={{ justifyContent: "space-evenly" }}>
@@ -48,11 +60,11 @@ export const GameBox = React.memo((props: {gamePhase: GamePhase, letters: string
             </Box>
             <Divider />
             <Box padding="1em">
-                <Input isDisabled={props.gamePhase != "OnGoing"} variant="filled" size="lg" textAlign="center" placeholder="Type words..." />
+                <Input value={word} onChange={(e) => setWord(() => e.target.value)} onKeyDown={(e) => processEnter(e)} isDisabled={props.gamePhase != "OnGoing"} variant="filled" size="lg" textAlign="center" placeholder="Type words..." />
             </Box>
             <Divider />
             <Box padding="1em">
-                <Text as='i' fontWeight="bold">Words Written</Text>
+                <Text fontWeight="bold">Words Written</Text>
                 <Wrap marginTop="0.6em">
                     {[...Array(20)].map((_, i) =>
                         <WrapItem key={i}>

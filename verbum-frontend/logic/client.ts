@@ -1,12 +1,15 @@
 import Centrifuge from "centrifuge";
+import { WordAttempt } from "./entities";
 
 class GameHostClient {
     centrifuge: Centrifuge;
     roomId: string;
+    playerName: string;
 
-    constructor(name: string, gameId: number){
-        this.centrifuge = new Centrifuge('ws://localhost:8000/connection/websocket', {name});
-        this.roomId = "room_"+gameId;
+    constructor(playerName: string, gameId: number){
+        this.playerName = playerName;
+        this.centrifuge = new Centrifuge('ws://localhost:8000/connection/websocket', {name: playerName});
+        this.roomId = gameId.toString();
     }
 
     onConnect(handler: (...args: any[]) => void){
@@ -21,6 +24,30 @@ class GameHostClient {
             console.log('Disconnected: ' + ctx.reason);
             handler(ctx);
         });
+    }
+
+    async attemptWord(word: string) : Promise<[boolean, number]>{
+        var attempt: WordAttempt = {Word: word.toUpperCase()}
+
+        try{
+            var response = await this.centrifuge.namedRPC("WordAttempt", attempt)
+            switch(response.data.Type){
+                case null:
+                case undefined:
+                    console.log("Error parsing word attempt response: ", response);
+                    return [false, 0];
+                case "WordApproved":
+                    return [true, response.data.ScoreDiff];
+                case "WordRejected":
+                    return [false, 0];
+            }
+
+            console.log("Error parsing word attempt response: ", response);
+            return [false, 0];
+        }catch(e){
+            console.log("Failed to send word attempt: ", e);
+            return [false, 0];
+        }
     }
 
     hookGameCallbacks(handler: (...args: any[]) => void){

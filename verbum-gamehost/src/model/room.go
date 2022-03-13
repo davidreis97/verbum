@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	STARTING_TIMER = 15
-	ONGOING_TIMER  = 120
+	STARTING_TIMER = 1
+	ONGOING_TIMER  = 300
 )
 
 type GameState int64
@@ -58,27 +58,44 @@ func NewRoom(node *centrifuge.Node) *Room {
 	return r
 }
 
-func (r *Room) AttemptWord(playerId int64, word string) {
+func (r *Room) ProcessWordAttempt(data *[]byte, playerId int64) *centrifuge.RPCReply {
+	var attempt WordAttempt
+	json.Unmarshal(*data, &attempt)
+	valid, points := r.AttemptWord(playerId, attempt.Word)
+
+	if valid {
+		r.AddPoints(playerId, points)
+		payload, _ := json.Marshal(GenWordApproved(points))
+		return &centrifuge.RPCReply{Data: payload}
+	} else {
+		payload, _ := json.Marshal(GenWordRejected())
+		return &centrifuge.RPCReply{Data: payload}
+	}
+}
+
+func (r *Room) AttemptWord(playerId int64, word string) (bool, int) {
 	for _, char := range word {
 		_, isAcceptedChar := r.letters[char]
 
 		if !isAcceptedChar {
-			return
+			return false, 0
 		}
 	}
 
 	//TODO - Check if word is in list
 
-	r.AddPoints(playerId, len(word))
+	wordScore := len(word)
+
+	return true, wordScore
 }
 
 func (r *Room) AddPoints(playerId int64, scoreDiff int) {
 	r.players[playerId].score += scoreDiff
 
-	r.SendGamePayload(GenScoreChange(playerId, scoreDiff))
+	r.BroadcastPayload(GenScoreChange(playerId, scoreDiff))
 }
 
-func (r *Room) AddPlayer(playerName string) error {
+func (r *Room) AddPlayer(playerName string) int64 {
 	newPlayer := Player{
 		id:    rand.Int63(),
 		name:  playerName,
@@ -87,30 +104,30 @@ func (r *Room) AddPlayer(playerName string) error {
 
 	r.players[newPlayer.id] = &newPlayer
 
-	r.SendGamePayload(GenPlayerEnter(newPlayer.name, newPlayer.id))
+	r.BroadcastPayload(GenPlayerEnter(newPlayer.name, newPlayer.id))
 
-	return nil
+	return newPlayer.id
 }
 
 func (r *Room) DropPlayer(playerId int64) {
 	delete(r.players, playerId)
 
-	r.SendGamePayload(GenPlayerExit(playerId))
+	r.BroadcastPayload(GenPlayerExit(playerId))
 }
 
-func (r *Room) SendGamePayload(message interface{}) (*centrifuge.PublishResult, error) {
+func (r *Room) BroadcastPayload(message interface{}) (*centrifuge.PublishResult, error) {
 	jsonMessage, err := json.Marshal(message)
 	if err != nil {
 		return nil, err
 	}
 	log.Println("Sent " + string(jsonMessage) + " in room id " + strconv.FormatInt(r.id, 10))
-	result, err := r.node.Publish("room_"+strconv.FormatInt(r.id, 36), jsonMessage, centrifuge.WithHistory(9999, 4*time.Minute))
+	result, err := r.node.Publish(strconv.FormatInt(r.id, 36), jsonMessage, centrifuge.WithHistory(9999, 4*time.Minute))
 	return &result, err
 }
 
 func (r *Room) StartGame() {
 	r.state = Starting
-	_, err := r.SendGamePayload(GenToStarting())
+	_, err := r.BroadcastPayload(GenToStarting())
 	if err != nil {
 		log.Println(err.Error())
 		return
@@ -128,7 +145,7 @@ func (r *Room) StartGame() {
 		letters[i] = k
 		i++
 	}
-	_, err = r.SendGamePayload(GenToOnGoing(letters))
+	_, err = r.BroadcastPayload(GenToOnGoing(letters))
 
 	if err != nil {
 		log.Println(err.Error())
@@ -141,12 +158,14 @@ func (r *Room) StartGame() {
 
 	//log.Println("Game ended in room id " + strconv.FormatInt(r.id, 10))
 
-	r.state = OnGoing
-	_, err = r.SendGamePayload(GenToFinished())
+	r.state = Finished
+	_, err = r.BroadcastPayload(GenToFinished())
 	if err != nil {
 		log.Println(err.Error())
 		return
 	}
+
+	// TODO - CLEAN HISTORY IN ALL CHANNELS RELATED TO THIS GAME
 
 	r.StartGame()
 }
