@@ -12,3 +12,20 @@ height: 100%;
     text-rendering: optimizeLegibility;
     text-shadow: rgba(0,0,0,.01) 0 0 1px;
 }
+
+/* width */
+::-webkit-scrollbar {
+    width: 0px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 6px;
+    margin-top: 1em;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}

@@ -1,6 +1,6 @@
 import { NextPage } from "next"
 import { useRouter } from "next/router";
-import { Box, Center, Container, Divider } from '@chakra-ui/react'
+import { Box, Center, Container, Text } from '@chakra-ui/react'
 import { useEffect, useState } from "react";
 import GameHostClient from "../../logic/client";
 import { GamePhase, MessageType, Player, PlayerEnter, PlayerExit, ScoreChange, ToFinished, ToOnGoing, ToStarting } from "../../logic/entities";
@@ -28,14 +28,6 @@ const Game: NextPage = () => {
     var gameId = Number.parseInt(gameIdString as string);
     var username: string;
 
-    if(inBrowser()){
-        username = localStorage.getItem(LS_USERNAME_KEY) ?? "";
-        if(username == ""){
-            router.push("/"); //TODO - Better feedback ("need username!") and redirect back to same game once username is filled
-            return <Box/>;
-        }
-    }
-
     useEffect(() => {
         if (isNaN(gameId) && typeof gameId === 'number' || state.client != null) return;
 
@@ -52,6 +44,14 @@ const Game: NextPage = () => {
 
         setState((state)=> ({...state, client: client}))
     }, [gameId]);
+
+    if(inBrowser()){
+        username = localStorage.getItem(LS_USERNAME_KEY) ?? "";
+        if(username == ""){
+            router.push("/"); //TODO - Better feedback ("need username!") and redirect back to same game once username is filled
+            return <Box/>;
+        }
+    }
 
     function playerEnter(msg: PlayerEnter){
         setState(s => ({...s, players: [...s.players, {id: msg.PlayerId, name: msg.PlayerName, score: 0}] }));
@@ -140,14 +140,18 @@ const Game: NextPage = () => {
     }
 
     return (
-        <Center w='100%' h='100%'>
+        <Center w='100%' h='100%' flexDirection="column" justifyContent="space-between">
+            <Box display="flex" marginTop="3.5em">
+                <Text className='antialiased' userSelect="none" as='i' fontSize='3xl' fontWeight='bold' marginTop="-1.5em">Verbum</Text>
+                <Text className='antialiased' userSelect="none" as='i' fontSize='3xl' fontWeight='bold' marginTop="-1.5em" color="vgreen.500">.io</Text>
+            </Box>
             <Container maxW='container.lg'>
-                <Box borderWidth='1px' borderRadius='lg' display="flex">
+                <Box display="flex">
                     <GameBox gamePhase={state.gamePhase} letters={state.letters} sendAttempt={sendAttempt}/>
-                    <Divider h="auto" orientation="vertical" />
                     <ScoreTable players={state.players} />
                 </Box>
             </Container>
+            <Box/>
         </Center>
     )
 }

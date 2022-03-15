@@ -27,9 +27,10 @@ const (
 )
 
 type Player struct {
-	id    int64
-	name  string
-	score int
+	id             int64
+	name           string
+	score          int
+	wordsAttempted map[string]bool
 }
 
 type Room struct {
@@ -90,7 +91,10 @@ func (r *Room) AttemptWord(playerId int64, word string, wordlist *[]string) (boo
 		return false, 0 //Word is not valid english word
 	}
 
-	//TODO - Check player hasn't sent word yet
+	if _, hasPlayed := r.players[playerId].wordsAttempted[word]; hasPlayed {
+		return false, 0 //Word has already been used by this player
+	}
+	r.players[playerId].wordsAttempted[word] = true
 
 	wordScore := len(word)
 
@@ -105,9 +109,10 @@ func (r *Room) AddPoints(playerId int64, scoreDiff int) {
 
 func (r *Room) AddPlayer(playerName string) int64 {
 	newPlayer := Player{
-		id:    rand.Int63(),
-		name:  playerName,
-		score: 0,
+		id:             rand.Int63(),
+		name:           playerName,
+		score:          0,
+		wordsAttempted: make(map[string]bool),
 	}
 
 	r.players[newPlayer.id] = &newPlayer

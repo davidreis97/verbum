@@ -1,4 +1,5 @@
 import { ChakraProvider, extendTheme } from '@chakra-ui/react'
+import { mode } from "@chakra-ui/theme-tools";
 import { AppProps } from 'next/app'
 import '../styles/global.css'
 
@@ -20,6 +21,26 @@ const theme = extendTheme({
       800: '#402509',
       900: '#1b0b00',
     },
+    vgreen: {
+      50: '#ebf9f9',
+      100: '#c4eded',
+      200: '#9de2e2',
+      300: '#76d6d6',
+      400: '#4ecaca',
+      500: '#35b1b1',
+      600: '#298989',
+      700: '#1d6262',
+      800: '#123b3b',
+      900: '#061414',
+      999: '#278282'
+    },
+  },
+  styles: {
+    global: (props: any) => ({
+      body: {
+        bg: mode("gray.300","#171F2B")(props),
+      }
+    })
   },
 });
 
