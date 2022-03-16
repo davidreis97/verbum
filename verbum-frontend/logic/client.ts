@@ -8,7 +8,7 @@ class GameHostClient {
 
     constructor(playerName: string, gameId: number){
         this.playerName = playerName;
-        this.centrifuge = new Centrifuge('ws://localhost:8000/connection/websocket', {name: playerName});
+        this.centrifuge = new Centrifuge('ws://localhost:8080/connection/websocket', {name: playerName});
         this.roomId = gameId.toString();
     }
 

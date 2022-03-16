@@ -84,7 +84,7 @@ export const GameBox = React.memo((props: { gamePhase: GamePhase, letters: strin
                             return (
                                 <Box display="flex" style={{ justifyContent: "space-evenly" }}>
                                     {props.letters.map((l, i) =>
-                                        <MotionBox initial="hidden" animate="show" variants={smoothIn(0, -10)} transition={{...springTransition,delay: i * 0.1}}>
+                                        <MotionBox key={i} initial="hidden" animate="show" variants={smoothIn(0, -10)} transition={{...springTransition,delay: i * 0.1}}>
                                             <LetterBox letter={l} key={i} />
                                         </MotionBox>)}
                                 </Box>
@@ -103,7 +103,7 @@ export const GameBox = React.memo((props: { gamePhase: GamePhase, letters: strin
                 <Input id="wordinput"
                     onBlur={(e) => e.target.placeholder = "Type words..."}
                     onFocus={(e) => e.target.placeholder = ""}
-                    focusBorderColor="#278282"
+                    focusBorderColor="vgreen.999"
                     backgroundColor="#2C394B"
                     borderRadius="2xl"
                     value={word}

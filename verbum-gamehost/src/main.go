@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -11,26 +12,31 @@ import (
 
 	"github.com/centrifugal/centrifuge"
 	"github.com/davidreis97/verbum/verbum-gamehost/src/model"
+	"github.com/gin-gonic/gin"
 )
-
-func handler(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		h.ServeHTTP(w, r)
-	})
-}
 
 func handleLog(e centrifuge.LogEntry) {
 	log.Printf("%s: %v", e.Message, e.Fields)
 }
 
+func handleConn(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Printf("Here")
+		h.ServeHTTP(w, r)
+	})
+}
+
 func main() {
+
+	// Load Wordlist
+
 	wordlist, err := LoadWordlist("wordlist.txt")
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	//sort.Strings(*wordlist) //List should be sorted already. Any issues, uncomment here
+	// Setup Centrifuge
 
 	node, err := centrifuge.New(centrifuge.Config{
 		LogLevel:   centrifuge.LogLevelDebug,
@@ -46,7 +52,7 @@ func main() {
 	})
 	node.SetBroker(broker)
 
-	room := model.NewRoom(node)
+	roomManager := model.NewRoomManager(node)
 
 	node.OnConnecting(func(ctx context.Context, evt centrifuge.ConnectEvent) (centrifuge.ConnectReply, error) {
 		return centrifuge.ConnectReply{
@@ -57,14 +63,11 @@ func main() {
 	})
 
 	node.OnConnect(func(client *centrifuge.Client) {
-		// transportName := client.Transport().Name()
-		// transportProto := client.Transport().Protocol()
-		// log.Printf("client %s connected via %s (%s)", client.UserID(), transportName, transportProto)
-
 		var clientId int64
+		var room *model.Room
 
 		client.OnSubscribe(func(e centrifuge.SubscribeEvent, cb centrifuge.SubscribeCallback) {
-			roomID, err := strconv.Atoi(e.Channel)
+			roomID, err := strconv.ParseInt(e.Channel, 10, 64)
 
 			if err != nil {
 				cb(centrifuge.SubscribeReply{}, centrifuge.ErrorBadRequest)
@@ -72,6 +75,13 @@ func main() {
 			}
 
 			log.Printf("Subscription on room id %d", roomID)
+			room = roomManager.GetRoom(roomID)
+
+			if room == nil {
+				cb(centrifuge.SubscribeReply{}, centrifuge.ErrorNotAvailable)
+				return
+			}
+
 			clientId = room.AddPlayer(client.UserID())
 			cb(centrifuge.SubscribeReply{Options: centrifuge.SubscribeOptions{Position: true, Recover: true, RecoverSince: &centrifuge.StreamPosition{Offset: 0}}}, nil)
 		})
@@ -91,6 +101,11 @@ func main() {
 		})
 
 		client.OnRPC(func(e centrifuge.RPCEvent, cb centrifuge.RPCCallback) {
+			if room == nil {
+				cb(centrifuge.RPCReply{}, centrifuge.ErrorNotAvailable)
+				return
+			}
+
 			if e.Method == "WordAttempt" {
 				cb(*room.ProcessWordAttempt(&e.Data, clientId, wordlist), nil)
 				return
@@ -99,26 +114,35 @@ func main() {
 		})
 
 		client.OnDisconnect(func(e centrifuge.DisconnectEvent) {
+			if room == nil {
+				return
+			}
+
 			room.DropPlayer(clientId)
-			//log.Printf("client %s disconnected", client.UserID())
 		})
 	})
-
-	go room.StartGame()
 
 	if err := node.Run(); err != nil {
 		log.Fatal(err)
 	}
 
-	wsHandler := centrifuge.NewWebsocketHandler(node, centrifuge.WebsocketConfig{CheckOrigin: CheckOrigin})
-	http.Handle("/connection/websocket", handler(wsHandler))
+	httpServer := gin.Default()
 
-	http.Handle("/", http.FileServer(http.Dir("./")))
+	httpServer.GET("/connection/websocket", gin.WrapH(handleConn(centrifuge.NewWebsocketHandler(node, centrifuge.WebsocketConfig{CheckOrigin: CheckOrigin}))))
 
-	log.Printf("Starting server, visit http://localhost:8000")
-	if err := http.ListenAndServe(":8000", nil); err != nil {
-		log.Fatal(err)
-	}
+	httpServer.GET("/matchmake", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"room": roomManager.GetNextRoom().Id,
+		})
+	})
+
+	httpServer.GET("/status", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "ok",
+		})
+	})
+
+	httpServer.Run()
 }
 
 func CheckOrigin(r *http.Request) bool {

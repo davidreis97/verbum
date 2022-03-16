@@ -16,10 +16,13 @@ const Home: NextPage = () => {
     <Box w='100%' h='100%'>
       <Container h='100%' maxW='container.sm'>
         <Center h='100%' flexDir='column'>
-          <Text className='antialiased' userSelect="none" as='i' fontSize='8xl' fontWeight='bold' marginTop="-1.5em">VerbumIO</Text>
+          <Box display="flex">
+            <Text className='antialiased' userSelect="none" as='i' fontSize='8xl' fontWeight='bold' marginTop="-1.5em">Verbum</Text>
+            <Text className='antialiased' userSelect="none" as='i' fontSize='8xl' fontWeight='bold' marginTop="-1.5em" color="vgreen.500">.io</Text>
+          </Box>
           <Box display="flex" w="100%">
-            <Input placeholder='Username' marginRight="1em" size="lg" onChange={(evt) => setState((_) => evt.target.value)} value={state}/>
-            <Button colorScheme='teal' size="lg" onClick={() => setLSUsername(state)}>PLAY</Button>
+            <Input focusBorderColor="vgreen.500" placeholder='Username' marginRight="1em" size="lg" onChange={(evt) => setState((_) => evt.target.value)} value={state}/>
+            <Button _hover={{ bg: 'vgreen.600' }} _active={{ bg: 'vgreen.600' }} backgroundColor="vgreen.500" size="lg" onClick={() => setLSUsername(state)}>PLAY</Button>
           </Box>
         </Center>
       </Container>

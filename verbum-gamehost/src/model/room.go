@@ -35,7 +35,7 @@ type Player struct {
 
 type Room struct {
 	node    *centrifuge.Node
-	id      int64
+	Id      int64
 	letters map[rune]bool
 	state   GameState
 	players map[int64]*Player
@@ -44,7 +44,7 @@ type Room struct {
 func NewRoom(node *centrifuge.Node) *Room {
 	r := new(Room)
 
-	r.id = 0 //rand.Int63()
+	r.Id = rand.Int63()
 	r.letters = make(map[rune]bool)
 	r.letters['A'] = true
 	r.letters['B'] = true
@@ -56,7 +56,7 @@ func NewRoom(node *centrifuge.Node) *Room {
 	r.node = node
 	r.players = make(map[int64]*Player)
 
-	log.Println("Created new unstarted room with id " + strconv.FormatInt(r.id, 10))
+	log.Println("Created new unstarted room with id " + strconv.FormatInt(r.Id, 10))
 
 	return r
 }
@@ -133,12 +133,12 @@ func (r *Room) BroadcastPayload(message interface{}) (*centrifuge.PublishResult,
 	if err != nil {
 		return nil, err
 	}
-	log.Println("Sent " + string(jsonMessage) + " in room id " + strconv.FormatInt(r.id, 10))
-	result, err := r.node.Publish(strconv.FormatInt(r.id, 36), jsonMessage, centrifuge.WithHistory(9999, 4*time.Minute))
+	log.Println("Sent " + string(jsonMessage) + " in room id " + strconv.FormatInt(r.Id, 10))
+	result, err := r.node.Publish(strconv.FormatInt(r.Id, 36), jsonMessage, centrifuge.WithHistory(9999, 4*time.Minute))
 	return &result, err
 }
 
-func (r *Room) StartGame() {
+func (r *Room) RunGame() {
 	r.state = Starting
 	_, err := r.BroadcastPayload(GenToStarting())
 	if err != nil {
@@ -165,11 +165,7 @@ func (r *Room) StartGame() {
 		return
 	}
 
-	//log.Println("Game ongoing in room id " + strconv.FormatInt(r.id, 10))
-
 	time.Sleep(ONGOING_TIMER * time.Second)
-
-	//log.Println("Game ended in room id " + strconv.FormatInt(r.id, 10))
 
 	r.state = Finished
 	_, err = r.BroadcastPayload(GenToFinished())
@@ -180,5 +176,7 @@ func (r *Room) StartGame() {
 
 	// TODO - CLEAN HISTORY IN ALL CHANNELS RELATED TO THIS GAME
 
-	r.StartGame()
+	if len(r.players) > 0 {
+		r.RunGame()
+	}
 }
