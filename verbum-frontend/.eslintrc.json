@@ -2,6 +2,12 @@
   "extends": "next/core-web-vitals",
   "rules": {
     "react/jsx-key": "off",
-    "react/display-name": "off"
+    "react/display-name": "off",
+    "react-hooks/exhaustive-deps": "off"
+  },
+  "settings": {
+    "next": {
+      "rootDir":"verbum-frontend"
+    }
   }
 }

@@ -20,7 +20,7 @@ export const ScoreTable = React.memo(
                     <Tbody>
                         {
                             props.players.sort((a, b) => b.score - a.score).map((p, i) =>
-                                <ScoreLine p={p} pos={i + 1}></ScoreLine>
+                                <ScoreLine key={i} p={p} pos={i + 1}></ScoreLine>
                             )
                         }
                     </Tbody>

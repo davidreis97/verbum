@@ -5,13 +5,14 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/centrifugal/centrifuge"
 	"github.com/davidreis97/verbum/verbum-gamehost/src/model"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -27,6 +28,10 @@ func handleConn(h http.Handler) http.Handler {
 }
 
 func main() {
+
+	// Initialize rand with time-based seed
+
+	rand.Seed(time.Now().UnixNano())
 
 	// Load Wordlist
 
@@ -67,12 +72,7 @@ func main() {
 		var room *model.Room
 
 		client.OnSubscribe(func(e centrifuge.SubscribeEvent, cb centrifuge.SubscribeCallback) {
-			roomID, err := strconv.ParseInt(e.Channel, 10, 64)
-
-			if err != nil {
-				cb(centrifuge.SubscribeReply{}, centrifuge.ErrorBadRequest)
-				return
-			}
+			roomID := e.Channel
 
 			log.Printf("Subscription on room id %d", roomID)
 			room = roomManager.GetRoom(roomID)
@@ -127,6 +127,12 @@ func main() {
 	}
 
 	httpServer := gin.Default()
+
+	config := cors.DefaultConfig()
+	config.AllowOrigins = []string{"http://localhost:3000"}
+	config.AllowMethods = []string{"GET"}
+
+	httpServer.Use(cors.New(config))
 
 	httpServer.GET("/connection/websocket", gin.WrapH(handleConn(centrifuge.NewWebsocketHandler(node, centrifuge.WebsocketConfig{CheckOrigin: CheckOrigin}))))
 

@@ -1,9 +1,10 @@
 module github.com/davidreis97/verbum/verbum-gamehost
 
-go 1.17
+go 1.18
 
 require (
 	github.com/centrifugal/centrifuge v0.21.1
+	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-gonic/gin v1.7.7
 )
 

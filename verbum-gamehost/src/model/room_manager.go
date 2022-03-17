@@ -3,7 +3,7 @@ package model
 import "github.com/centrifugal/centrifuge"
 
 type RoomManager struct {
-	rooms    map[int64]*Room
+	rooms    map[string]*Room
 	nextRoom *Room
 	node     *centrifuge.Node
 }
@@ -15,16 +15,19 @@ const (
 func NewRoomManager(node *centrifuge.Node) *RoomManager {
 	rm := new(RoomManager)
 	rm.node = node
-	rm.rooms = make(map[int64]*Room)
+	rm.rooms = make(map[string]*Room)
 	return rm
 }
 
-func (rm *RoomManager) RemoveRoom(id int64) {
+func (rm *RoomManager) RemoveRoom(id string) {
 	delete(rm.rooms, id)
 }
 
 func (rm *RoomManager) GetNextRoom() *Room {
-	if rm.nextRoom == nil || len(rm.nextRoom.players) >= MAX_PLAYERS {
+	if rm.nextRoom == nil ||
+		len(rm.nextRoom.players) >= MAX_PLAYERS ||
+		(rm.nextRoom.state != Unstarted && rm.nextRoom.state != Starting) {
+
 		rm.nextRoom = NewRoom(rm.node)
 		rm.rooms[rm.nextRoom.Id] = rm.nextRoom
 		go rm.nextRoom.RunGame()
@@ -33,6 +36,6 @@ func (rm *RoomManager) GetNextRoom() *Room {
 	return rm.nextRoom
 }
 
-func (rm *RoomManager) GetRoom(id int64) *Room {
+func (rm *RoomManager) GetRoom(id string) *Room {
 	return rm.rooms[id]
 }

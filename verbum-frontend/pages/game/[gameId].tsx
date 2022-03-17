@@ -24,48 +24,50 @@ const Game: NextPage = () => {
         client: null
     });
     const router = useRouter();
-    const gameIdString = router.query['gameId'];
-    var gameId = Number.parseInt(gameIdString as string);
+    const gameId = router.query['gameId'];
     var username: string;
 
     useEffect(() => {
-        if (isNaN(gameId) && typeof gameId === 'number' || state.client != null) return;
+        if (gameId == null || typeof (gameId) != "string" || gameId.length <= 0 || state.client != null) return;
 
         console.log("Creating new client");
 
         var client = new GameHostClient(username, gameId);
 
-        //client.onConnect(() => setState((state) => ({ ...state, gamePhase: "Starting" })));
         client.onDisconnect(() => setState((state) => ({ ...state, gamePhase: "Connecting" })));
         client.hookGameCallbacks(handler);
         client.connect();
 
         console.log("Setting client for room " + gameId);
 
-        setState((state)=> ({...state, client: client}))
+        setState((state) => ({ ...state, client: client }))
+
+        return () => {
+            client.disconnect();
+        }
     }, [gameId]);
 
-    if(inBrowser()){
+    if (inBrowser()) {
         username = localStorage.getItem(LS_USERNAME_KEY) ?? "";
-        if(username == ""){
+        if (username == "") {
             router.push("/"); //TODO - Better feedback ("need username!") and redirect back to same game once username is filled
-            return <Box/>;
+            return <Box />;
         }
     }
 
-    function playerEnter(msg: PlayerEnter){
-        setState(s => ({...s, players: [...s.players, {id: msg.PlayerId, name: msg.PlayerName, score: 0}] }));
+    function playerEnter(msg: PlayerEnter) {
+        setState(s => ({ ...s, players: [...s.players, { id: msg.PlayerId, name: msg.PlayerName, score: 0 }] }));
     }
 
-    function playerExit(msg: PlayerExit){
-        setState(s => ({...s, players: s.players.filter(p => p.id != msg.PlayerId) }));
+    function playerExit(msg: PlayerExit) {
+        setState(s => ({ ...s, players: s.players.filter(p => p.id != msg.PlayerId) }));
     }
 
-    function scoreChange(msg: ScoreChange){
+    function scoreChange(msg: ScoreChange) {
         setState(s => ({
             ...s,
             players: s.players.map(p => {
-                if (p.id == msg.PlayerId){
+                if (p.id == msg.PlayerId) {
                     p.score += msg.ScoreDiff;
                 }
                 return p;
@@ -73,14 +75,14 @@ const Game: NextPage = () => {
         }));
     }
 
-    function toFinished(msg: ToFinished){
+    function toFinished(msg: ToFinished) {
         setState(s => ({
             ...s,
             gamePhase: "Finished"
         }));
     }
 
-    function toOnGoing(msg: ToOnGoing){
+    function toOnGoing(msg: ToOnGoing) {
         setState(s => ({
             ...s,
             gamePhase: "OnGoing",
@@ -88,15 +90,15 @@ const Game: NextPage = () => {
         }));
     }
 
-    function toStarting(msg: ToStarting){
+    function toStarting(msg: ToStarting) {
         setState(s => ({
             ...s,
             gamePhase: "Starting"
         }));
     }
 
-    async function sendAttempt(word: string) : Promise<[boolean, number]>{
-        if(!state.client){
+    async function sendAttempt(word: string): Promise<[boolean, number]> {
+        if (!state.client) {
             return [false, 0];
         }
 
@@ -147,11 +149,11 @@ const Game: NextPage = () => {
             </Box>
             <Container maxW='container.lg'>
                 <Box display="flex">
-                    <GameBox gamePhase={state.gamePhase} letters={state.letters} sendAttempt={sendAttempt}/>
+                    <GameBox gamePhase={state.gamePhase} letters={state.letters} sendAttempt={sendAttempt} />
                     <ScoreTable players={state.players} />
                 </Box>
             </Container>
-            <Box/>
+            <Box />
         </Center>
     )
 }

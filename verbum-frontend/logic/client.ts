@@ -6,10 +6,10 @@ class GameHostClient {
     roomId: string;
     playerName: string;
 
-    constructor(playerName: string, gameId: number){
+    constructor(playerName: string, gameId: string){
         this.playerName = playerName;
         this.centrifuge = new Centrifuge('ws://localhost:8080/connection/websocket', {name: playerName});
-        this.roomId = gameId.toString();
+        this.roomId = gameId;
     }
 
     onConnect(handler: (...args: any[]) => void){
@@ -64,6 +64,10 @@ class GameHostClient {
 
     connect(){
         this.centrifuge.connect();
+    }
+
+    disconnect(){
+        this.centrifuge.disconnect();
     }
 
     isConnected(){

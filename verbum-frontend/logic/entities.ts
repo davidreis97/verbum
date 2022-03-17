@@ -56,6 +56,12 @@ export interface WordAttempt {
     Word: string
 }
 
+// HTTP Matchmake
+
+export interface MatchmakeResponse {
+    room: string
+}
+
 //INTERNAL ENTITIES
 
 export interface Player {
