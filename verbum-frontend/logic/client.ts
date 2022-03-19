@@ -50,15 +50,23 @@ class GameHostClient {
         }
     }
 
-    hookGameCallbacks(handler: (...args: any[]) => void){
-        //var client = this;
+    async hookGameCallbacks(handler: (ctx: any, isHistory: boolean) => void, historyDone: () => void){
+        var history = await this.centrifuge.history(this.roomId, {limit: 10000});
+        for(var pub of history.publications){
+            handler(pub, true);
+        }
 
-        this.centrifuge.subscribe(this.roomId, handler, {since: {offset: 0, epoch:""}}).on('subscribe', async (ctx) => {
+        historyDone();
+
+        var realTimeHandler = (ctx: any) => {
+            handler(ctx, false);
+        }
+
+        this.centrifuge.subscribe(this.roomId, realTimeHandler, {since: {epoch: history.epoch, offset: history.offset}}).on('subscribe', async (ctx) => {
             console.log("Subscribed to room " + this.roomId, ctx);
             if(ctx.recovered === false){
                 console.warn("FAILED TO GET CLIENT UP TO DATE");
             }
-            //console.log("History", await client.centrifuge.history(this.roomId, {limit: 1000}));
         });
     }
 

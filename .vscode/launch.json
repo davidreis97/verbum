@@ -11,6 +11,43 @@
             "mode": "auto",
             "program": "${workspaceFolder}/verbum-gamehost/src/main.go",
             "cwd": "${workspaceFolder}/verbum-gamehost"
+        },
+        {
+            "name": "Next.js: debug server-side",
+            "type": "node-terminal",
+            "request": "launch",
+            "command": "npm run dev",
+            "cwd": "${workspaceFolder}/verbum-frontend"
+        },
+        {
+            "name": "Next.js: debug client-side",
+            "type": "pwa-chrome",
+            "request": "launch",
+            "url": "http://localhost:3000",
+            "cwd": "${workspaceFolder}/verbum-frontend",
+            "webRoot": "${workspaceFolder}/verbum-frontend/src",
+            "sourceMaps": true,
+            "sourceMapPathOverrides": {
+                "webpack://_N_E/*": "${webRoot}/*"
+            }
+        },
+        {
+            "name": "Next.js: debug full stack",
+            "type": "node-terminal",
+            "request": "launch",
+            "command": "npm run dev",
+            "console": "integratedTerminal",
+            "serverReadyAction": {
+                "pattern": "started server on .+, url: (https?://.+)",
+                "uriFormat": "%s",
+                "action": "debugWithChrome"
+            },
+            "cwd": "${workspaceFolder}/verbum-frontend",
+            "webRoot": "${workspaceFolder}/verbum-frontend/src",
+            "sourceMaps": true,
+            "sourceMapPathOverrides": {
+                "webpack://_N_E/*": "${webRoot}/*"
+            }
         }
     ]
 }

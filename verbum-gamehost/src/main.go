@@ -68,13 +68,12 @@ func main() {
 	})
 
 	node.OnConnect(func(client *centrifuge.Client) {
-		var clientId int64
+		var clientId int32
 		var room *model.Room
 
 		client.OnSubscribe(func(e centrifuge.SubscribeEvent, cb centrifuge.SubscribeCallback) {
 			roomID := e.Channel
 
-			log.Printf("Subscription on room id %d", roomID)
 			room = roomManager.GetRoom(roomID)
 
 			if room == nil {
@@ -87,16 +86,10 @@ func main() {
 		})
 
 		client.OnHistory(func(e centrifuge.HistoryEvent, cb centrifuge.HistoryCallback) {
-			if !client.IsSubscribed(e.Channel) {
-				cb(centrifuge.HistoryReply{}, centrifuge.ErrorPermissionDenied)
-				return
-			}
 			cb(centrifuge.HistoryReply{}, nil)
 		})
 
 		client.OnPublish(func(e centrifuge.PublishEvent, cb centrifuge.PublishCallback) {
-			//log.Printf("client publishes into channel %s: %s", e.Channel, string(e.Data))
-			log.Printf("Unexpected attempt to publish to channel %s: %s", e.Channel, string(e.Data))
 			cb(centrifuge.PublishReply{}, centrifuge.ErrorBadRequest)
 		})
 

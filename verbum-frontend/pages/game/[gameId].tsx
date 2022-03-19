@@ -17,7 +17,7 @@ type GameState = {
 };
 
 const Game: NextPage = () => {
-    const [state, setState] = useState<GameState>({
+    var [state, setState] = useState<GameState>({
         gamePhase: "Connecting",
         players: [],
         letters: [],
@@ -35,8 +35,13 @@ const Game: NextPage = () => {
         var client = new GameHostClient(username, gameId);
 
         client.onDisconnect(() => setState((state) => ({ ...state, gamePhase: "Connecting" })));
-        client.hookGameCallbacks(handler);
+        client.onConnect(() => {
+            // Weird, I know. State is the initial object when the useEffect first runs, while s is the most recent state.
+            client.hookGameCallbacks(handler, () => {setState((s) => ({...s, players: state.players, letters: state.letters, gamePhase: state.gamePhase}))});
+        });
         client.connect();
+
+       
 
         console.log("Setting client for room " + gameId);
 
@@ -55,43 +60,44 @@ const Game: NextPage = () => {
         }
     }
 
-    function playerEnter(msg: PlayerEnter) {
-        setState(s => ({ ...s, players: [...s.players, { id: msg.PlayerId, name: msg.PlayerName, score: 0 }] }));
+    function playerEnter(msg: PlayerEnter, modifyState: (call: React.SetStateAction<GameState>) => void) {
+        modifyState(s => ({ ...s, players: [...s.players, { id: msg.PlayerId, name: msg.PlayerName, score: 0 }] }));
     }
 
-    function playerExit(msg: PlayerExit) {
-        setState(s => ({ ...s, players: s.players.filter(p => p.id != msg.PlayerId) }));
+    function playerExit(msg: PlayerExit, modifyState: (call: React.SetStateAction<GameState>) => void) {
+        modifyState(s => ({ ...s, players: s.players.filter(p => p.id != msg.PlayerId) }));
     }
 
-    function scoreChange(msg: ScoreChange) {
-        setState(s => ({
+    function scoreChange(msg: ScoreChange, modifyState: (call: React.SetStateAction<GameState>) => void) {
+        modifyState(s => ({
             ...s,
-            players: s.players.map(p => {
+            players: s.players.map((p,i,a) => {
+                var newScore = p.score;
                 if (p.id == msg.PlayerId) {
-                    p.score += msg.ScoreDiff;
+                    newScore += msg.ScoreDiff;
                 }
-                return p;
+                return {...p, score: newScore};
             })
         }));
     }
 
-    function toFinished(msg: ToFinished) {
-        setState(s => ({
+    function toFinished(msg: ToFinished, modifyState: (call: React.SetStateAction<GameState>) => void) {
+        modifyState(s => ({
             ...s,
             gamePhase: "Finished"
         }));
     }
 
-    function toOnGoing(msg: ToOnGoing) {
-        setState(s => ({
+    function toOnGoing(msg: ToOnGoing, modifyState: (call: React.SetStateAction<GameState>) => void) {
+        modifyState(s => ({
             ...s,
             gamePhase: "OnGoing",
             letters: msg.Letters.map(n => String.fromCharCode(n))
         }));
     }
 
-    function toStarting(msg: ToStarting) {
-        setState(s => ({
+    function toStarting(msg: ToStarting, modifyState: (call: React.SetStateAction<GameState>) => void) {
+        modifyState(s => ({
             ...s,
             gamePhase: "Starting"
         }));
@@ -105,7 +111,15 @@ const Game: NextPage = () => {
         return state.client.attemptWord(word);
     }
 
-    function handler(ctx: any) {
+    const modifyStateNoRerender = (s: React.SetStateAction<GameState>) => {
+        if(s instanceof Function){
+            state = s(state)
+        }else{
+            state = s
+        }       
+    }
+
+    function handler(ctx: any, isHistory: boolean) {
         var msgType = ctx?.data?.Type as MessageType;
 
         if (msgType == null) {
@@ -113,30 +127,36 @@ const Game: NextPage = () => {
             return;
         }
 
+        var modifyState = setState;
+
+        if(isHistory){
+            modifyState = modifyStateNoRerender;
+        }
+
         switch (msgType) {
             case "PlayerEnter":
                 console.log("PlayerEnter", ctx);
-                playerEnter(ctx.data as PlayerEnter);
+                playerEnter(ctx.data as PlayerEnter, modifyState);
                 break;
             case "PlayerExit":
                 console.log("PlayerExit", ctx);
-                playerExit(ctx.data as PlayerExit);
+                playerExit(ctx.data as PlayerExit, modifyState);
                 break;
             case "ScoreChange":
                 console.log("ScoreChange", ctx);
-                scoreChange(ctx.data as ScoreChange);
+                scoreChange(ctx.data as ScoreChange, modifyState);
                 break;
             case "ToFinished":
                 console.log("ToFinished", ctx);
-                toFinished(ctx.data as ToFinished);
+                toFinished(ctx.data as ToFinished, modifyState);
                 break;
             case "ToOnGoing":
                 console.log("ToOnGoing", ctx);
-                toOnGoing(ctx.data as ToOnGoing);
+                toOnGoing(ctx.data as ToOnGoing, modifyState);
                 break;
             case "ToStarting":
                 console.log("ToStarting", ctx);
-                toStarting(ctx.data as ToStarting);
+                toStarting(ctx.data as ToStarting, modifyState);
                 break;
         }
     }

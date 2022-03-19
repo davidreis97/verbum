@@ -13,11 +13,11 @@ import (
 )
 
 const (
-	STARTING_TIMER = 1
-	ONGOING_TIMER  = 300
+	STARTING_TIMER = 15
+	ONGOING_TIMER  = 120
 )
 
-type GameState int64
+type GameState int32
 
 const (
 	Unstarted GameState = iota
@@ -27,7 +27,7 @@ const (
 )
 
 type Player struct {
-	id             int64
+	id             int32
 	name           string
 	score          int
 	wordsAttempted map[string]bool
@@ -38,7 +38,7 @@ type Room struct {
 	Id      string
 	letters map[rune]bool
 	state   GameState
-	players map[int64]*Player
+	players map[int32]*Player
 }
 
 func NewRoom(node *centrifuge.Node) *Room {
@@ -54,14 +54,14 @@ func NewRoom(node *centrifuge.Node) *Room {
 	r.letters['F'] = true
 	r.state = Unstarted
 	r.node = node
-	r.players = make(map[int64]*Player)
+	r.players = make(map[int32]*Player)
 
 	log.Println("Created new unstarted room with id " + r.Id)
 
 	return r
 }
 
-func (r *Room) ProcessWordAttempt(data *[]byte, playerId int64, wordlist *[]string) *centrifuge.RPCReply {
+func (r *Room) ProcessWordAttempt(data *[]byte, playerId int32, wordlist *[]string) *centrifuge.RPCReply {
 	var attempt WordAttempt
 	json.Unmarshal(*data, &attempt)
 	valid, points := r.AttemptWord(playerId, attempt.Word, wordlist)
@@ -76,7 +76,7 @@ func (r *Room) ProcessWordAttempt(data *[]byte, playerId int64, wordlist *[]stri
 	}
 }
 
-func (r *Room) AttemptWord(playerId int64, word string, wordlist *[]string) (bool, int) {
+func (r *Room) AttemptWord(playerId int32, word string, wordlist *[]string) (bool, int) {
 	for _, char := range word {
 		_, isAcceptedChar := r.letters[char]
 
@@ -101,15 +101,15 @@ func (r *Room) AttemptWord(playerId int64, word string, wordlist *[]string) (boo
 	return true, wordScore
 }
 
-func (r *Room) AddPoints(playerId int64, scoreDiff int) {
+func (r *Room) AddPoints(playerId int32, scoreDiff int) {
 	r.players[playerId].score += scoreDiff
 
 	r.BroadcastPayload(GenScoreChange(playerId, scoreDiff))
 }
 
-func (r *Room) AddPlayer(playerName string) int64 {
+func (r *Room) AddPlayer(playerName string) int32 {
 	newPlayer := Player{
-		id:             rand.Int63(),
+		id:             rand.Int31(),
 		name:           playerName,
 		score:          0,
 		wordsAttempted: make(map[string]bool),
@@ -122,7 +122,7 @@ func (r *Room) AddPlayer(playerName string) int64 {
 	return newPlayer.id
 }
 
-func (r *Room) DropPlayer(playerId int64) {
+func (r *Room) DropPlayer(playerId int32) {
 	delete(r.players, playerId)
 
 	r.BroadcastPayload(GenPlayerExit(playerId))

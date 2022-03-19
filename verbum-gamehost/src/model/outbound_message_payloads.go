@@ -15,10 +15,10 @@ func GenToStarting() toStarting {
 type playerEnter struct {
 	Type       string
 	PlayerName string
-	PlayerId   int64
+	PlayerId   int32
 }
 
-func GenPlayerEnter(playerName string, playerId int64) playerEnter {
+func GenPlayerEnter(playerName string, playerId int32) playerEnter {
 	return playerEnter{Type: "PlayerEnter", PlayerName: playerName, PlayerId: playerId}
 }
 
@@ -26,10 +26,10 @@ func GenPlayerEnter(playerName string, playerId int64) playerEnter {
 
 type playerExit struct {
 	Type     string
-	PlayerId int64
+	PlayerId int32
 }
 
-func GenPlayerExit(playerId int64) playerExit {
+func GenPlayerExit(playerId int32) playerExit {
 	return playerExit{Type: "PlayerExit", PlayerId: playerId}
 }
 
@@ -48,11 +48,11 @@ func GenToOnGoing(letters []rune) toOnGoing {
 
 type scoreChange struct {
 	Type      string
-	PlayerId  int64
+	PlayerId  int32
 	ScoreDiff int
 }
 
-func GenScoreChange(playerId int64, scoreDiff int) scoreChange {
+func GenScoreChange(playerId int32, scoreDiff int) scoreChange {
 	return scoreChange{Type: "ScoreChange", PlayerId: playerId, ScoreDiff: scoreDiff}
 }
 
