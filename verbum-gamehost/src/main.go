@@ -68,7 +68,6 @@ func main() {
 	})
 
 	node.OnConnect(func(client *centrifuge.Client) {
-		var clientId int32
 		var room *model.Room
 
 		client.OnSubscribe(func(e centrifuge.SubscribeEvent, cb centrifuge.SubscribeCallback) {
@@ -81,7 +80,14 @@ func main() {
 				return
 			}
 
-			clientId = room.AddPlayer(client.UserID())
+			err = room.AddPlayer(client.UserID())
+
+			if err != nil {
+				room = nil
+				cb(centrifuge.SubscribeReply{}, centrifuge.ErrorLimitExceeded)
+				return
+			}
+
 			cb(centrifuge.SubscribeReply{Options: centrifuge.SubscribeOptions{Position: true, Recover: true, RecoverSince: &centrifuge.StreamPosition{Offset: 0}}}, nil)
 		})
 
@@ -100,7 +106,7 @@ func main() {
 			}
 
 			if e.Method == "WordAttempt" {
-				cb(*room.ProcessWordAttempt(&e.Data, clientId, wordlist), nil)
+				cb(*room.ProcessWordAttempt(&e.Data, client.UserID(), wordlist), nil)
 				return
 			}
 			cb(centrifuge.RPCReply{}, centrifuge.ErrorMethodNotFound)
@@ -111,7 +117,7 @@ func main() {
 				return
 			}
 
-			room.DropPlayer(clientId)
+			room.DropPlayer(client.UserID())
 		})
 	})
 

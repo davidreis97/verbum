@@ -27,10 +27,10 @@ export const ScoreTable = React.memo(
                 <Box>
                     {
                         props.players.sort((a, b) => b.score - a.score).map((p, i) =>
-                            <MotionBox marginTop="0.5em" display="flex" key={p.id} layout initial="hidden" animate="show" variants={smoothIn(0, -50)} transition={springTransition}>
-                                    <Box width="55px" textAlign="end" paddingRight="0.4em" whiteSpace="nowrap">{getTag(i+1)}</Box>
-                                    <Text width="130px" paddingRight="0.5em">{p.name}</Text>
-                                    <Text whiteSpace="nowrap">{p.score} points</Text>
+                            <MotionBox marginTop="0.5em" display="flex" key={p.name} layout initial="hidden" animate="show" variants={smoothIn(0, -50)} transition={springTransition}>
+                                <Box width="55px" textAlign="end" paddingRight="0.4em" whiteSpace="nowrap">{getTag(i+1)}</Box>
+                                <Text opacity={p.connected ? 1 : 0.5} width="130px" paddingRight="0.5em">{p.name}</Text>
+                                <Text opacity={p.connected ? 1 : 0.5} whiteSpace="nowrap">{p.score} points</Text>
                             </MotionBox>
                         )
                     }

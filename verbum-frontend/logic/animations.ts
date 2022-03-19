@@ -1,5 +1,5 @@
-import { Box, Tr, Text, forwardRef } from "@chakra-ui/react";
-import { isValidMotionProp, motion } from "framer-motion";
+import { Box, Text } from "@chakra-ui/react";
+import { motion } from "framer-motion";
 
 export const smoothIn = (x: number, y: number) => ({ hidden: { x, y, opacity: 0 }, show: { x: 0, y: 0, opacity: 1 } })
 // DARKMODEWARN

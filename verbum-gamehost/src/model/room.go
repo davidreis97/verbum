@@ -2,6 +2,7 @@ package model
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"math/rand"
 	"sort"
@@ -27,10 +28,10 @@ const (
 )
 
 type Player struct {
-	id             int32
 	name           string
 	score          int
 	wordsAttempted map[string]bool
+	connected      bool
 }
 
 type Room struct {
@@ -38,7 +39,7 @@ type Room struct {
 	Id      string
 	letters map[rune]bool
 	state   GameState
-	players map[int32]*Player
+	players map[string]*Player
 }
 
 func NewRoom(node *centrifuge.Node) *Room {
@@ -54,20 +55,20 @@ func NewRoom(node *centrifuge.Node) *Room {
 	r.letters['F'] = true
 	r.state = Unstarted
 	r.node = node
-	r.players = make(map[int32]*Player)
+	r.players = make(map[string]*Player)
 
 	log.Println("Created new unstarted room with id " + r.Id)
 
 	return r
 }
 
-func (r *Room) ProcessWordAttempt(data *[]byte, playerId int32, wordlist *[]string) *centrifuge.RPCReply {
+func (r *Room) ProcessWordAttempt(data *[]byte, player string, wordlist *[]string) *centrifuge.RPCReply {
 	var attempt WordAttempt
 	json.Unmarshal(*data, &attempt)
-	valid, points := r.AttemptWord(playerId, attempt.Word, wordlist)
+	valid, points := r.AttemptWord(player, attempt.Word, wordlist)
 
 	if valid {
-		r.AddPoints(playerId, points)
+		r.AddPoints(player, points)
 		payload, _ := json.Marshal(GenWordApproved(points))
 		return &centrifuge.RPCReply{Data: payload}
 	} else {
@@ -76,7 +77,7 @@ func (r *Room) ProcessWordAttempt(data *[]byte, playerId int32, wordlist *[]stri
 	}
 }
 
-func (r *Room) AttemptWord(playerId int32, word string, wordlist *[]string) (bool, int) {
+func (r *Room) AttemptWord(player string, word string, wordlist *[]string) (bool, int) {
 	for _, char := range word {
 		_, isAcceptedChar := r.letters[char]
 
@@ -91,41 +92,52 @@ func (r *Room) AttemptWord(playerId int32, word string, wordlist *[]string) (boo
 		return false, 0 //Word is not valid english word
 	}
 
-	if _, hasPlayed := r.players[playerId].wordsAttempted[word]; hasPlayed {
+	if _, hasPlayed := r.players[player].wordsAttempted[word]; hasPlayed {
 		return false, 0 //Word has already been used by this player
 	}
-	r.players[playerId].wordsAttempted[word] = true
+	r.players[player].wordsAttempted[word] = true
 
 	wordScore := len(word)
 
 	return true, wordScore
 }
 
-func (r *Room) AddPoints(playerId int32, scoreDiff int) {
-	r.players[playerId].score += scoreDiff
+func (r *Room) AddPoints(player string, scoreDiff int) {
+	r.players[player].score += scoreDiff
 
-	r.BroadcastPayload(GenScoreChange(playerId, scoreDiff))
+	r.BroadcastPayload(GenScoreChange(player, scoreDiff))
 }
 
-func (r *Room) AddPlayer(playerName string) int32 {
-	newPlayer := Player{
-		id:             rand.Int31(),
-		name:           playerName,
-		score:          0,
-		wordsAttempted: make(map[string]bool),
+func (r *Room) AddPlayer(playerName string) error {
+	p, playerAlreadyExists := r.players[playerName]
+
+	if playerAlreadyExists {
+		if p.connected {
+			return errors.New("player_already_exists")
+		} else {
+			p.connected = true
+		}
+	} else {
+		p = &Player{
+			name:           playerName,
+			score:          0,
+			wordsAttempted: make(map[string]bool),
+			connected:      true,
+		}
 	}
 
-	r.players[newPlayer.id] = &newPlayer
+	r.players[playerName] = p
 
-	r.BroadcastPayload(GenPlayerEnter(newPlayer.name, newPlayer.id))
+	r.BroadcastPayload(GenPlayerEnter(playerName))
 
-	return newPlayer.id
+	return nil
 }
 
-func (r *Room) DropPlayer(playerId int32) {
-	delete(r.players, playerId)
-
-	r.BroadcastPayload(GenPlayerExit(playerId))
+func (r *Room) DropPlayer(playerName string) {
+	if p, exists := r.players[playerName]; exists {
+		p.connected = false
+		r.BroadcastPayload(GenPlayerExit(playerName))
+	}
 }
 
 func (r *Room) BroadcastPayload(message interface{}) (*centrifuge.PublishResult, error) {

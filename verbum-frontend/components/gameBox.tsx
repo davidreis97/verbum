@@ -1,7 +1,8 @@
-import { Box, Center, Divider, Input, Wrap, WrapItem, Text, AlertIcon, Alert, useToast } from "@chakra-ui/react";
+import { Box, Center, Divider, Input, Wrap, WrapItem, Text, AlertIcon, Alert, useToast, Progress } from "@chakra-ui/react";
 import React, { useState } from "react";
 import { GamePhase } from "../logic/entities";
 import { MotionBox, MotionText, smoothIn, springTransition, successIn } from "../logic/animations";
+import { Timer } from "./timer";
 
 const LetterBox = (props: { letter: string }) => {
     return (
@@ -22,7 +23,6 @@ export const GameBox = React.memo((props: { gamePhase: GamePhase, letters: strin
         word = "";
     }
 
-    //TODO - TEST THIS SHIT WITHOUT CLIENT SIDE VALIDATION
     async function processEnter(e: React.KeyboardEvent<HTMLInputElement>): Promise<void> {
         if (e.key == "Enter" && word.length > 0) {
             if (wordsUsed.includes(word)) {
@@ -65,13 +65,15 @@ export const GameBox = React.memo((props: { gamePhase: GamePhase, letters: strin
 
     return (
         <Box flexGrow="1">
-            <MotionBox initial="hidden" animate="show" variants={smoothIn(0, -50)} transition={springTransition} margin="1em" backgroundColor="vgreen.800" boxShadow="2xl" borderRadius="2xl" padding="0 1em 0 1em" display="flex" width="auto" style={{ justifyContent: "space-evenly" }}>
+            <MotionBox initial="hidden" animate="show" variants={smoothIn(0, -50)} transition={springTransition} height="5em" margin="1em" backgroundColor="vgreen.800" boxShadow="2xl" borderRadius="2xl" padding="0 1em 0 1em" display="flex" width="auto" style={{ justifyContent: "space-evenly" }}>
                 {
                     (() => {
-                        if (props.gamePhase == "Connecting") {
+                        if (props.gamePhase) {
                             return (
-                                <Box padding="1em">
-                                    <MotionText initial="hidden" animate="show" variants={smoothIn(0, -50)} transition={springTransition} fontSize="4xl">Connecting...</MotionText>
+                                <Box width="100%" display="flex" flexDir="column" alignItems="center">
+                                    <Box flexGrow="1"/>
+                                    <MotionText alignContent="center" flexGrow="1" initial="hidden" animate="show" variants={smoothIn(0, -50)} transition={springTransition} fontSize="4xl">Connecting...</MotionText>
+                                    <Timer growing={false} initialTime={10} time={20} withWarning={true}/>
                                 </Box>
                             )
                         } else if (props.gamePhase == "Starting") {
@@ -103,6 +105,7 @@ export const GameBox = React.memo((props: { gamePhase: GamePhase, letters: strin
                 <Input id="wordinput"
                     onBlur={(e) => e.target.placeholder = "Type words..."}
                     onFocus={(e) => e.target.placeholder = ""}
+                    autoComplete="off"
                     focusBorderColor="vgreen.999"
                     backgroundColor="#2C394B"
                     borderRadius="2xl"

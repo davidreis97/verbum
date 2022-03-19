@@ -17,13 +17,12 @@ export interface ToStarting {
 
 export interface PlayerEnter {
     Type: PlayerEnterType,
-    PlayerName: string,
-    PlayerId: number
+    PlayerName: string
 }
 
 export interface PlayerExit {
     Type: PlayerExit,
-    PlayerId: number
+    PlayerName: string
 }
 
 export interface ToOnGoing {
@@ -33,7 +32,7 @@ export interface ToOnGoing {
 
 export interface ScoreChange {
     Type: ScoreChangeType,
-    PlayerId: number,
+    PlayerName: string,
     ScoreDiff: number
 }
 
@@ -65,9 +64,9 @@ export interface MatchmakeResponse {
 //INTERNAL ENTITIES
 
 export interface Player {
-    id: number,
     name: string,
-    score: number
+    score: number,
+    connected: boolean
 }
 
 export type GamePhase = "Connecting" | "Starting" | "OnGoing" | "Finished"

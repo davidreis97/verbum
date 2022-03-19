@@ -41,8 +41,6 @@ const Game: NextPage = () => {
         });
         client.connect();
 
-       
-
         console.log("Setting client for room " + gameId);
 
         setState((state) => ({ ...state, client: client }))
@@ -61,11 +59,26 @@ const Game: NextPage = () => {
     }
 
     function playerEnter(msg: PlayerEnter, modifyState: (call: React.SetStateAction<GameState>) => void) {
-        modifyState(s => ({ ...s, players: [...s.players, { id: msg.PlayerId, name: msg.PlayerName, score: 0 }] }));
+        modifyState(s => {
+            var player = s.players.find(p => p.name == msg.PlayerName);
+            if (player != null){
+                player = {...player, connected: true}
+            }else{
+                player = { name: msg.PlayerName, score: 0, connected: true }
+            }
+
+            return { ...s, players: [...s.players.filter(p => p.name != msg.PlayerName), player] }
+        });
     }
 
     function playerExit(msg: PlayerExit, modifyState: (call: React.SetStateAction<GameState>) => void) {
-        modifyState(s => ({ ...s, players: s.players.filter(p => p.id != msg.PlayerId) }));
+        modifyState(s => ({ ...s, players: s.players.map(p => {
+            if(p.name == msg.PlayerName){
+                return {...p, connected: false}
+            }else{
+                return {...p}
+            }
+        }) }));
     }
 
     function scoreChange(msg: ScoreChange, modifyState: (call: React.SetStateAction<GameState>) => void) {
@@ -73,7 +86,7 @@ const Game: NextPage = () => {
             ...s,
             players: s.players.map((p,i,a) => {
                 var newScore = p.score;
-                if (p.id == msg.PlayerId) {
+                if (p.name == msg.PlayerName) {
                     newScore += msg.ScoreDiff;
                 }
                 return {...p, score: newScore};

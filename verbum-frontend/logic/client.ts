@@ -16,6 +16,7 @@ class GameHostClient {
         this.centrifuge.on('connect', async (ctx) => {
             console.log('Connected over ' + ctx.transport);
             handler(ctx);
+            console.log(ctx);
         });
     }
 
@@ -51,6 +52,11 @@ class GameHostClient {
     }
 
     async hookGameCallbacks(handler: (ctx: any, isHistory: boolean) => void, historyDone: () => void){
+        if(this.isSubscribed(this.roomId)) {
+            console.log("Already subscribed - skipping subscriptions");
+            return;
+        }
+
         var history = await this.centrifuge.history(this.roomId, {limit: 10000});
         for(var pub of history.publications){
             handler(pub, true);
@@ -80,6 +86,10 @@ class GameHostClient {
 
     isConnected(){
         return this.centrifuge.isConnected();
+    }
+
+    isSubscribed(channel: string){
+        return this.centrifuge.getSub(channel);
     }
 }
 
