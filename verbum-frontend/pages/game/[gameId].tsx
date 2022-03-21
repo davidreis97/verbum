@@ -60,7 +60,11 @@ const Game: NextPage = () => {
 
         var client = new GameHostClient(username, gameId);
 
-        client.onDisconnect(() => showConnectingToast()); //TODO - Can't show toast if we expect to lose connection
+        client.onDisconnect((ctx) => {
+            if(ctx.reason != "client" || ctx.reconnect != false){
+                showConnectingToast();
+            }
+        });
         client.onConnect(() => {
             closeConnectingToast();
             // Weird, I know. State is the initial object when the useEffect first runs, while s is the most recent state.

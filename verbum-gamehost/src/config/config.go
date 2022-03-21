@@ -13,6 +13,9 @@ func InitializeDefaults() {
 	viper.SetDefault("finished_timer", "15")
 	viper.SetDefault("vowel_count", "3")
 	viper.SetDefault("consonant_count", "4")
+	viper.SetDefault("allowed_origins", []string{"http://localhost:3000"})
+	viper.SetDefault("wordlist", "./wordlist3.txt")
+	viper.SetDefault("max_players", "10")
 }
 
 func Load() {

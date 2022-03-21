@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"context"
-	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
@@ -15,6 +14,7 @@ import (
 	"github.com/davidreis97/verbum/verbum-gamehost/src/model"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
 )
 
 func handleLog(e centrifuge.LogEntry) {
@@ -23,7 +23,6 @@ func handleLog(e centrifuge.LogEntry) {
 
 func handleConn(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Printf("Here")
 		h.ServeHTTP(w, r)
 	})
 }
@@ -43,11 +42,16 @@ func main() {
 
 	// Load Wordlist
 
-	wordlist, err := LoadWordlist("wordlist.txt")
+	wordlist, err := LoadWordlist(viper.GetString("wordlist"))
 
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// Wordlist Grooming
+	// sort.Strings(*wordlist)
+	// SaveWordlist("wordlist3_groomed.txt", *wordlist)
+	// os.Exit(0)
 
 	// Setup Centrifuge
 
@@ -136,7 +140,7 @@ func main() {
 	httpServer := gin.Default()
 
 	config := cors.DefaultConfig()
-	config.AllowOrigins = []string{"http://localhost:3000"}
+	config.AllowOrigins = viper.GetStringSlice("allowed_origins")
 	config.AllowMethods = []string{"GET"}
 
 	httpServer.Use(cors.New(config))
@@ -159,8 +163,20 @@ func main() {
 }
 
 func CheckOrigin(r *http.Request) bool {
-	//fmt.Println("Received connection from " + r.Host)
+	if !Contains(viper.GetStringSlice("allowed_origins"), r.Host) {
+		log.Printf("Received websocket connection from unknown host [%s]", r.Host)
+	}
 	return true
+}
+
+func Contains(s []string, str string) bool {
+	for _, v := range s {
+		if v == str {
+			return true
+		}
+	}
+
+	return false
 }
 
 func LoadWordlist(path string) (*[]string, error) {
@@ -176,4 +192,21 @@ func LoadWordlist(path string) (*[]string, error) {
 		lines = append(lines, scanner.Text())
 	}
 	return &lines, scanner.Err()
+}
+
+func SaveWordlist(path string, wordlist []string) {
+	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+
+	if err != nil {
+		log.Fatalf("failed creating file: %s", err)
+	}
+
+	datawriter := bufio.NewWriter(file)
+
+	for _, data := range wordlist {
+		_, _ = datawriter.WriteString(data + "\n")
+	}
+
+	datawriter.Flush()
+	file.Close()
 }

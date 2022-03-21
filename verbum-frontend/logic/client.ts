@@ -8,7 +8,7 @@ class GameHostClient {
 
     constructor(playerName: string, gameId: string){
         this.playerName = playerName;
-        this.centrifuge = new Centrifuge('ws://localhost:8080/connection/websocket', {name: playerName});
+        this.centrifuge = new Centrifuge(process.env.NEXT_PUBLIC_GAMEHOST_ENDPOINT as string, {name: playerName});
         this.roomId = gameId;
     }
 
@@ -22,7 +22,7 @@ class GameHostClient {
 
     onDisconnect(handler: (...args: any[]) => void){
         this.centrifuge.on('disconnect', function(ctx){
-            console.log('Disconnected: ' + ctx.reason);
+            console.log('Disconnected: ', ctx);
             handler(ctx);
         });
     }

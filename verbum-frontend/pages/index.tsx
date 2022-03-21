@@ -33,7 +33,7 @@ const Home: NextPage = () => {
         try {
             setLoadingMatchmaking(true);
 
-            var response = await (await window.fetch("http://localhost:8080/matchmake")).json() as MatchmakeResponse
+            var response = await (await window.fetch(process.env.NEXT_PUBLIC_MATCHMAKE_ENDPOINT as string)).json() as MatchmakeResponse
 
             router.push(`/game/${response.room}`);
         } catch (_) {

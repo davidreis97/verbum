@@ -3,5 +3,8 @@
   "ongoing_timer": "120",
   "starting_timer": "15",
   "vowel_count": "3",
-  "consonant_count": "4"
+  "consonant_count": "4",
+  "allowed_origins": ["http://localhost:3000"],
+  "wordlist": "./wordlist3_groomed.txt",
+  "max_players": "10"
 }

@@ -10,6 +10,11 @@ const Background = dynamic(
 )
 import '../styles/global.css'
 
+const env = process.env.NODE_ENV
+if (env == "production"){
+  console.log = () => {}
+}
+
 const theme = extendTheme({ 
   config: { 
     initialColorMode: 'dark', 

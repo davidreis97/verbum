@@ -24,7 +24,7 @@ export const Background = React.memo(() => {
     for(var x = 0; x < screenDimensions.width; x += separation){
         for(var y = 0; y < screenDimensions.height; y += separation){
             letterBoxes.push(
-                <MotionBox key={uniqueKey} initial="hidden" animate="show" variants={smoothIn(0, -10)} transition={{ ...springTransition, delay: uniqueKey * 0.02 }}>
+                <MotionBox key={uniqueKey} initial="hidden" animate="show" variants={smoothIn(0, -10)} transition={{ ...springTransition, delay: uniqueKey * 0.01 }}>
                     <LetterBox boxShadow='2xl' transform={`rotate(${360 * Math.random()}deg) scale(${scaleMin + (Math.random() * scaleVariety)})`} position="absolute" rotate={360 * Math.random()} left={x + (xVariety * (0.5 - Math.random()))} top={y + (yVariety * (0.5 - Math.random()))} letter={String.fromCharCode(65+Math.floor(Math.random()*26))}/>
                 </MotionBox>
             );
