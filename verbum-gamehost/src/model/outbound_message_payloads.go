@@ -1,13 +1,21 @@
 package model
 
+import (
+	"time"
+
+	"github.com/spf13/viper"
+)
+
 //ToStarting
 
 type toStarting struct {
-	Type string
+	Type      string
+	Timestamp int64
+	Duration  int
 }
 
 func GenToStarting() toStarting {
-	return toStarting{Type: "ToStarting"}
+	return toStarting{Type: "ToStarting", Timestamp: time.Now().Unix(), Duration: viper.GetInt("starting_timer")}
 }
 
 //PlayerEnter
@@ -35,12 +43,14 @@ func GenPlayerExit(playerName string) playerExit {
 //ToOnGoing
 
 type toOnGoing struct {
-	Type    string
-	Letters []rune
+	Type      string
+	Letters   []rune
+	Timestamp int64
+	Duration  int
 }
 
 func GenToOnGoing(letters []rune) toOnGoing {
-	return toOnGoing{Type: "ToOnGoing", Letters: letters}
+	return toOnGoing{Type: "ToOnGoing", Letters: letters, Timestamp: time.Now().Unix(), Duration: viper.GetInt("ongoing_timer")}
 }
 
 //ScoreChange
@@ -58,11 +68,13 @@ func GenScoreChange(playerName string, scoreDiff int) scoreChange {
 //ToFinished
 
 type toFinished struct {
-	Type string
+	Type      string
+	Timestamp int64
+	Duration  int
 }
 
 func GenToFinished() toFinished {
-	return toFinished{Type: "ToFinished"}
+	return toFinished{Type: "ToFinished", Timestamp: time.Now().Unix(), Duration: viper.GetInt("finished_timer")}
 }
 
 //WordApproved

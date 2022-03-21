@@ -12,7 +12,9 @@ export type WordRejectedType = "WordRejected"
 export type MessageType = ToStartingType | PlayerEnterType | PlayerExitType | ToOnGoingType | ScoreChangeType | ToFinishedType | WordApprovedType | WordRejectedType
 
 export interface ToStarting {
-    Type: ToStartingType
+    Type: ToStartingType,
+    Timestamp: number,
+    Duration: number
 }
 
 export interface PlayerEnter {
@@ -27,7 +29,9 @@ export interface PlayerExit {
 
 export interface ToOnGoing {
     Type: ToOnGoingType,
-    Letters: number[]
+    Letters: number[],
+    Timestamp: number,
+    Duration: number
 }
 
 export interface ScoreChange {
@@ -37,7 +41,9 @@ export interface ScoreChange {
 }
 
 export interface ToFinished {
-    Type: ToFinishedType
+    Type: ToFinishedType,
+    Timestamp: number,
+    Duration: number
 }
 
 export interface WordApproved {

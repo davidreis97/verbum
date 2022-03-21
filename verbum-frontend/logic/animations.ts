@@ -8,7 +8,7 @@ export const successIn = () => ({ hidden: { scale: 2, color: "var(--chakra-color
 export const springTransition = {
     type: "spring",
     damping: 20,
-    stiffness: 300
+    stiffness: 300,
 };
 
 export const MotionBox = motion(Box);

@@ -6,28 +6,27 @@ const measure = 1;
 export const Timer = React.memo((props: {time: number, initialTime: number, withWarning: boolean, growing: boolean}) => {
     const percentPerMeasure = 100.0 * measure / props.time;
     
-    console.log(props.time, props.initialTime);
-
-    const [progress, setProgress] = useState<number>((100.0 * props.initialTime) / props.time);
-
-    console.log("Initialized at", progress);
+    var [progress, setProgress] = useState<number>((100.0 * props.initialTime) / props.time);
 
     useEffect(() => {
-        //setProgress(progress + percentPerMeasure); //TODO - WTF
-        var intervalId = setInterval(() => {
-            console.log("Added ", percentPerMeasure, "to", progress, "got", progress + percentPerMeasure);
-            setProgress(progress + percentPerMeasure);
-        },measure * 1000);
+        var timeout: NodeJS.Timeout;
 
-        if(progress >= 100){
-            clearInterval(intervalId);
-            return () => {}
+        function IncrementProgress(){
+            setProgress((p) => p + percentPerMeasure);
+
+            if(progress < 100){
+                timeout = setTimeout(IncrementProgress, measure * 1000);
+            }
         }
+
+        timeout = setTimeout(IncrementProgress, 0);
 
         return () => {
-            clearInterval(intervalId);
+            if(timeout != null){
+                clearTimeout(timeout);
+            }
         }
-    })
+    }, [])
 
     var visualProgress;
 

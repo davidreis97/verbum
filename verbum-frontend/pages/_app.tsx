@@ -1,6 +1,13 @@
 import { ChakraProvider, extendTheme } from '@chakra-ui/react'
 import { mode } from "@chakra-ui/theme-tools";
 import { AppProps } from 'next/app'
+import dynamic from "next/dynamic";
+import unusedModule from '../components/background';
+type ClientConfettiType = typeof unusedModule;
+const Background = dynamic(
+    () => import('../components/background').then((mod) => mod.Background) as Promise<ClientConfettiType>,
+    { ssr: false },
+)
 import '../styles/global.css'
 
 const theme = extendTheme({ 
@@ -47,6 +54,7 @@ const theme = extendTheme({
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <ChakraProvider theme={theme}>
+      <Background/>
       <Component {...pageProps} />
     </ChakraProvider>
   )

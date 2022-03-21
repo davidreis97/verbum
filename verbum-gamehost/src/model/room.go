@@ -11,11 +11,7 @@ import (
 	"unsafe"
 
 	"github.com/centrifugal/centrifuge"
-)
-
-const (
-	STARTING_TIMER = 15
-	ONGOING_TIMER  = 120
+	"github.com/spf13/viper"
 )
 
 type GameState int32
@@ -46,13 +42,7 @@ func NewRoom(node *centrifuge.Node) *Room {
 	r := new(Room)
 
 	r.Id = RandStringBytesMaskImprSrcUnsafe(12)
-	r.letters = make(map[rune]bool)
-	r.letters['A'] = true
-	r.letters['B'] = true
-	r.letters['C'] = true
-	r.letters['D'] = true
-	r.letters['E'] = true
-	r.letters['F'] = true
+	r.RegenLetters()
 	r.state = Unstarted
 	r.node = node
 	r.players = make(map[string]*Player)
@@ -60,6 +50,17 @@ func NewRoom(node *centrifuge.Node) *Room {
 	log.Println("Created new unstarted room with id " + r.Id)
 
 	return r
+}
+
+func (r *Room) RegenLetters() {
+	r.letters = make(map[rune]bool)
+	vowels, consonants := RandomLetterSet(viper.GetInt("vowel_count"), viper.GetInt("consonant_count"))
+	for _, v := range vowels {
+		r.letters[v] = true
+	}
+	for _, c := range consonants {
+		r.letters[c] = true
+	}
 }
 
 func (r *Room) ProcessWordAttempt(data *[]byte, player string, wordlist *[]string) *centrifuge.RPCReply {
@@ -150,6 +151,16 @@ func (r *Room) BroadcastPayload(message interface{}) (*centrifuge.PublishResult,
 	return &result, err
 }
 
+func (r *Room) ResetPlayers() {
+	for name, player := range r.players {
+		if !player.connected {
+			delete(r.players, name)
+		} else {
+			player.score = 0
+		}
+	}
+}
+
 func (r *Room) RunGame() {
 	r.state = Starting
 	_, err := r.BroadcastPayload(GenToStarting())
@@ -160,7 +171,7 @@ func (r *Room) RunGame() {
 
 	//log.Println("Game started in room id " + strconv.FormatInt(r.id, 10))
 
-	time.Sleep(STARTING_TIMER * time.Second)
+	time.Sleep(viper.GetDuration("starting_timer") * time.Second)
 
 	r.state = OnGoing
 
@@ -177,7 +188,7 @@ func (r *Room) RunGame() {
 		return
 	}
 
-	time.Sleep(ONGOING_TIMER * time.Second)
+	time.Sleep(viper.GetDuration("ongoing_timer") * time.Second)
 
 	r.state = Finished
 	_, err = r.BroadcastPayload(GenToFinished())
@@ -186,9 +197,13 @@ func (r *Room) RunGame() {
 		return
 	}
 
+	time.Sleep(viper.GetDuration("finished_timer") * time.Second)
+
 	// TODO - CLEAN HISTORY IN ALL CHANNELS RELATED TO THIS GAME
+	r.ResetPlayers()
 
 	if len(r.players) > 0 {
+		r.RegenLetters()
 		r.RunGame()
 	}
 }
@@ -216,4 +231,22 @@ func RandStringBytesMaskImprSrcUnsafe(n int) string {
 	}
 
 	return *(*string)(unsafe.Pointer(&b))
+}
+
+var vowels = []rune("AEIOU")
+var consonants = []rune("BCDFGHJKLMNPQRSTVWXYZ")
+
+func RandomLetterSet(vowelCount int, consonantCount int) ([]rune, []rune) {
+	return GetRandomFromArray(vowelCount, vowels), GetRandomFromArray(consonantCount, consonants)
+}
+
+func GetRandomFromArray[K any](count int, slice []K) []K {
+	vowelSlice := make([]K, count)
+
+	p := rand.Perm(len(slice))
+	for i, vowelIndex := range p[:count] {
+		vowelSlice[i] = slice[vowelIndex]
+	}
+
+	return vowelSlice
 }

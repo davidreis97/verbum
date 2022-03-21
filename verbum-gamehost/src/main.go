@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/centrifugal/centrifuge"
+	"github.com/davidreis97/verbum/verbum-gamehost/src/config"
 	"github.com/davidreis97/verbum/verbum-gamehost/src/model"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -28,6 +29,13 @@ func handleConn(h http.Handler) http.Handler {
 }
 
 func main() {
+
+	// Initialize config
+
+	config.InitializeDefaults()
+	//config.save() // Uncomment to save default values to file (OVERWRITES EXISTING CONFIG)
+	config.Load()
+	config.Watch()
 
 	// Initialize rand with time-based seed
 
