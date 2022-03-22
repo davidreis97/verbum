@@ -12,8 +12,7 @@ jobs:
         run: |
           cd verbum-frontend
           npm ci
-          npx next build
-          npx next export
+          npm run static
 
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4.2.5
