@@ -4,9 +4,9 @@
     "starting_timer": "15",
     "vowel_count": "3",
     "consonant_count": "4",
-    "allowed_origins": ["https://verbum.davidreis.me"],
+    "allowed_origins": ["http://localhost:3000"],
     "wordlist": "./wordlist3_groomed.txt",
     "max_players": "10",
-    "bind_address": "0.0.0.0:3000",
-    "monitoring": "true"
+    "bind_address": "0.0.0.0:8080",
+    "monitoring": "false"
 }

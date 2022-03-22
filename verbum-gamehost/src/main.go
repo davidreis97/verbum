@@ -14,6 +14,7 @@ import (
 	"github.com/davidreis97/verbum/verbum-gamehost/src/model"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/viper"
 )
 
@@ -141,7 +142,7 @@ func main() {
 
 	config := cors.DefaultConfig()
 	config.AllowOrigins = viper.GetStringSlice("allowed_origins")
-	config.AllowMethods = []string{"GET"}
+	config.AllowMethods = []string{"GET", "FETCH"}
 
 	httpServer.Use(cors.New(config))
 
@@ -153,6 +154,8 @@ func main() {
 		})
 	})
 
+	httpServer.GET("/metrics", prometheusHandler())
+
 	httpServer.GET("/status", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "ok",
@@ -160,6 +163,14 @@ func main() {
 	})
 
 	httpServer.Run(viper.GetString("bind_address"))
+}
+
+func prometheusHandler() gin.HandlerFunc {
+	h := promhttp.Handler()
+
+	return func(c *gin.Context) {
+		h.ServeHTTP(c.Writer, c.Request)
+	}
 }
 
 func CheckOrigin(r *http.Request) bool {

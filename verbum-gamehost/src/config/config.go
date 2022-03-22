@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
@@ -17,14 +18,20 @@ func InitializeDefaults() {
 	viper.SetDefault("wordlist", "./wordlist3.txt")
 	viper.SetDefault("max_players", "10")
 	viper.SetDefault("bind_address", "0.0.0.0:80")
+	viper.SetDefault("monitoring", "false")
 }
 
 func Load() {
-	viper.SetConfigName("config")
 	viper.SetConfigType("json")
 	viper.AddConfigPath("/etc/verbum-gamehost/")  // path to look for the config file in
 	viper.AddConfigPath("$HOME/.verbum-gamehost") // call multiple times to add many search paths
 	viper.AddConfigPath(".")
+
+	if os.Getenv("ENV") == "PRODUCTION" {
+		viper.SetConfigName("config")
+	} else {
+		viper.SetConfigName("devconfig")
+	}
 
 	err := viper.ReadInConfig() // Find and read the config file
 	if err != nil {             // Handle errors reading the config file

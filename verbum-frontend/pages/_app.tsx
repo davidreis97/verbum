@@ -2,6 +2,7 @@ import { ChakraProvider, extendTheme } from '@chakra-ui/react'
 import { mode } from "@chakra-ui/theme-tools";
 import { AppProps } from 'next/app'
 import dynamic from "next/dynamic";
+import Head from 'next/head';
 import unusedModule from '../components/background';
 type ClientConfettiType = typeof unusedModule;
 const Background = dynamic(
@@ -59,6 +60,10 @@ const theme = extendTheme({
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <ChakraProvider theme={theme}>
+      <Head>
+        <title>Verbum.io</title>
+        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+      </Head>
       <Background/>
       <Component {...pageProps} />
     </ChakraProvider>
