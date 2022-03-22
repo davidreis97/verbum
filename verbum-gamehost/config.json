@@ -6,5 +6,6 @@
   "consonant_count": "4",
   "allowed_origins": ["http://localhost:3000"],
   "wordlist": "./wordlist3_groomed.txt",
-  "max_players": "10"
+  "max_players": "10",
+  "bind_address": "0.0.0.0:3000"
 }

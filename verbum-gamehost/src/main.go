@@ -159,7 +159,7 @@ func main() {
 		})
 	})
 
-	httpServer.Run()
+	httpServer.Run(viper.GetString("bind_address"))
 }
 
 func CheckOrigin(r *http.Request) bool {

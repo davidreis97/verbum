@@ -16,6 +16,7 @@ func InitializeDefaults() {
 	viper.SetDefault("allowed_origins", []string{"http://localhost:3000"})
 	viper.SetDefault("wordlist", "./wordlist3.txt")
 	viper.SetDefault("max_players", "10")
+	viper.SetDefault("bind_address", "0.0.0.0:80")
 }
 
 func Load() {
