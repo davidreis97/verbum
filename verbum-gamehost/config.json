@@ -8,5 +8,7 @@
     "wordlist": "./wordlist3_groomed.txt",
     "max_players": "10",
     "bind_address": "0.0.0.0:3000",
-    "monitoring": "true"
+    "monitoring": "true",
+    "tlsCert": "/etc/letsencrypt/live/wsverbum.davidreis.me/fullchain.pem",
+    "tlsKey": "/etc/letsencrypt/live/wsverbum.davidreis.me/privkey.pem"
 }

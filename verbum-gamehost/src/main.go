@@ -162,7 +162,15 @@ func main() {
 		})
 	})
 
-	httpServer.Run(viper.GetString("bind_address"))
+	tlsCert := viper.GetString("tlsCert")
+	tlsKey := viper.GetString("tlsKey")
+	if len(tlsCert) > 0 && len(tlsKey) > 0 {
+		log.Println("Running in HTTPS Mode")
+		httpServer.RunTLS(viper.GetString("bind_address"), tlsCert, tlsKey)
+	} else {
+		log.Println("Running in HTTP (No TLS) Mode")
+		httpServer.Run(viper.GetString("bind_address"))
+	}
 }
 
 func prometheusHandler() gin.HandlerFunc {

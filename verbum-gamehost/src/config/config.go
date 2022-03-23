@@ -19,6 +19,8 @@ func InitializeDefaults() {
 	viper.SetDefault("max_players", "10")
 	viper.SetDefault("bind_address", "0.0.0.0:80")
 	viper.SetDefault("monitoring", "false")
+	viper.SetDefault("tlsCert", "")
+	viper.SetDefault("tlsKey", "")
 }
 
 func Load() {
@@ -47,7 +49,7 @@ func Watch() {
 }
 
 func Save() {
-	err := viper.WriteConfigAs("./config.json")
+	err := viper.WriteConfigAs("./config_defaults.json")
 	if err != nil {
 		panic(fmt.Errorf("Fatal error config file: %w \n", err))
 	}
