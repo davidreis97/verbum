@@ -84,7 +84,7 @@ export const GameBox = (props: { gamePhase: GamePhase, phaseDuration: number, ph
     return (
         <Box flexGrow="1">
             <VerbumConfetti run={props.gamePhase == "Finished" && props.userPlace == 1}/>   
-            <MotionBox layout initial="hidden" animate="show" overflow="hidden" variants={smoothIn(0, -50)} transition={springTransition} minHeight="92px" margin="1em" backgroundColor="vgreen.800" boxShadow="2xl" borderRadius="2xl" display="flex" width="auto" style={{ justifyContent: "space-evenly" }}>    
+            <MotionBox layout initial="hidden" animate="show" variants={smoothIn(0, -50)} transition={springTransition} overflow="hidden" minHeight="92px" margin="1em" backgroundColor="vgreen.800" boxShadow="2xl" borderRadius="2xl" display="flex" width="auto" style={{ justifyContent: "space-evenly" }}>    
                 {
                     (() => {
                         if (props.gamePhase == "Connecting") {

@@ -51,7 +51,7 @@ class GameHostClient {
         }
     }
 
-    async hookGameCallbacks(handler: (ctx: any, isHistory: boolean) => void, historyDone: () => void){
+    async hookGameCallbacks(handler: (ctx: any, isHistory: boolean) => void, historyDone: () => void, errorHandler: (code: number) => void){
         if(this.isSubscribed(this.roomId)) {
             console.log("Already subscribed - skipping subscriptions");
             return;
@@ -68,12 +68,14 @@ class GameHostClient {
             handler(ctx, false);
         }
 
-        this.centrifuge.subscribe(this.roomId, realTimeHandler, {since: {epoch: history.epoch, offset: history.offset}}).on('subscribe', async (ctx) => {
+        this.centrifuge.subscribe(this.roomId, realTimeHandler, {since: {epoch: history.epoch, offset: history.offset}})
+        .on('subscribe', async (ctx) => {
             console.log("Subscribed to room " + this.roomId, ctx);
             if(ctx.recovered === false){
                 console.warn("FAILED TO GET CLIENT UP TO DATE");
             }
-        });
+        })
+        .on('error', async (ctx) => errorHandler(ctx.code));
     }
 
     connect(){

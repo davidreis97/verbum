@@ -76,3 +76,5 @@ export interface Player {
 }
 
 export type GamePhase = "Connecting" | "Starting" | "OnGoing" | "Finished"
+
+export enum Errors { NoUsername = "NoUsername", RoomUnavailable = "RoomUnavailable", UserAlreadyExists = "UserAlreadyExists" }

@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import { Box, Button, Center, Container, Text, ToastId, useToast } from '@chakra-ui/react'
 import { useEffect, useState } from "react";
 import GameHostClient from "../../logic/client";
-import { GamePhase, MessageType, Player, PlayerEnter, PlayerExit, ScoreChange, ToFinished, ToOnGoing, ToStarting } from "../../logic/entities";
+import { Errors, GamePhase, MessageType, Player, PlayerEnter, PlayerExit, ScoreChange, ToFinished, ToOnGoing, ToStarting } from "../../logic/entities";
 import React from "react";
 import { ScoreTable } from "../../components/score";
 import { GameBox } from "../../components/gameBox";
@@ -79,7 +79,7 @@ const Game: NextPage = () => {
                     phaseStart: state.phaseStart,
                     userPlace: state.userPlace
                 }))
-            });
+            }, errorHandler);
         });
         client.connect();
 
@@ -92,14 +92,19 @@ const Game: NextPage = () => {
         }
     }, [gameId]);
 
-    if (inBrowser()) {
+    if (inBrowser() && gameId != null) {
         username = localStorage.getItem(LS_USERNAME_KEY) ?? "";
         if (username == "") {
-            router.push("/"); //TODO - Better feedback ("need username!") and redirect back to same game once username is filled
-            return <Box />;
+            router.push({
+                pathname: "/",
+                query: {
+                    gameId,
+                    error: Errors.NoUsername
+                }
+            });
         }
     }
-
+    
     function playerEnter(msg: PlayerEnter, modifyState: (call: React.SetStateAction<GameState>) => void) {
         modifyState(s => {
             var player = s.players.find(p => p.name == msg.PlayerName);
@@ -219,6 +224,25 @@ const Game: NextPage = () => {
             case "ToStarting":
                 toStarting(ctx.data as ToStarting, modifyState);
                 break;
+        }
+    }
+
+    function errorHandler(code: number){
+        if(code == 108){ //Room not available
+            router.push({
+                pathname: "/",
+                query: {
+                    error: Errors.RoomUnavailable
+                }
+            });
+        }else if(code == 106){
+            router.push({
+                pathname: "/",
+                query: {
+                    gameId,
+                    error: Errors.UserAlreadyExists
+                }
+            });
         }
     }
 
