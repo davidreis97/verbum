@@ -1,22 +1,14 @@
 import { Progress } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 
-const measure = 1;
-
-export const Timer = React.memo((props: {time: number, initialTime: number, withWarning: boolean, growing: boolean}) => {
-    const percentPerMeasure = 100.0 * measure / props.time;
-    
+export const Timer = React.memo((props: {time: number, initialTime: number, withWarning: boolean, growing: boolean}) => {    
     var [progress, setProgress] = useState<number>((100.0 * props.initialTime) / props.time);
 
     useEffect(() => {
         var timeout: NodeJS.Timeout;
 
         function IncrementProgress(){
-            setProgress((p) => p + percentPerMeasure);
-
-            if(progress < 100){
-                timeout = setTimeout(IncrementProgress, measure * 1000);
-            }
+            setProgress((_) => 100);
         }
 
         timeout = setTimeout(IncrementProgress, 0);
@@ -39,9 +31,9 @@ export const Timer = React.memo((props: {time: number, initialTime: number, with
     visualProgress = Math.min(Math.max(visualProgress, 0), 100);
 
     return (
-        <Progress transition="1s ease" sx={{
+        <Progress sx={{
             "& > div:first-of-type": {
-              transition: `${measure}s linear`
+              transition: `${props.time - props.initialTime}s linear`
             },
           }} width="100%" size='xs' value={visualProgress} colorScheme={props.withWarning && progress > 80 ? "red" : "vgreen"} />
     )
