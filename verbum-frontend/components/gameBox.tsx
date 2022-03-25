@@ -1,4 +1,4 @@
-import { Box, Center, Divider, Input, Wrap, WrapItem, Text, AlertIcon, Alert, useToast, Progress, BoxProps } from "@chakra-ui/react";
+import { Box, Center, Divider, Input, Wrap, WrapItem, Text, AlertIcon, Alert, useToast, Progress, BoxProps, CircularProgress } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import { GamePhase } from "../logic/entities";
 import { MotionBox, MotionText, smoothIn, springTransition, successIn } from "../logic/animations";
@@ -89,9 +89,9 @@ export const GameBox = (props: { gamePhase: GamePhase, phaseDuration: number, ph
                     (() => {
                         if (props.gamePhase == "Connecting") {
                             return (
-                                <Box width="100%" display="flex" flexDir="column" alignItems="center">
-                                    <MotionText alignContent="center" flexGrow="1" initial="hidden" animate="show" variants={smoothIn(0, -50)} transition={springTransition} fontSize="4xl">Connecting...</MotionText>
-                                </Box>
+                                <MotionText initial="hidden" animate="show" variants={smoothIn(0, -50)} transition={springTransition} width="100%" display="flex" flexDir="column" alignItems="center" justifyContent="center">
+                                    <CircularProgress isIndeterminate color="vgreen.200" trackColor="rgb(0,0,0,0)" />
+                                </MotionText>
                             )
                         } else if (props.gamePhase == "Starting") {
                             return (
