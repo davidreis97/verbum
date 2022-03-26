@@ -99,7 +99,6 @@ function MyApp({ Component, pageProps }: AppProps) {
           <ToastBar
             toast={t}
             style={{marginBottom: "2em", marginTop:"-2em"}} // Overwrite styles
-            position="top-center" // Used to adapt the animation
           />
         )}
       </Toaster>

@@ -249,12 +249,7 @@ const Game: NextPage = () => {
 
     function shareGame(){
         navigator.clipboard.writeText(window.location.href);
-        toast({
-            title: "Copied game link to clipboard",
-            isClosable: true,
-            status: "success",
-            variant: "subtle"
-        });
+        toast.success("Copied game link to clipboard");
     }
 
     return (
