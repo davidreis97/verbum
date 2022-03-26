@@ -1,6 +1,6 @@
 import { NextPage } from "next"
 import { useRouter } from "next/router";
-import { Box, Button, Center, Container, Text, ToastId, useToast } from '@chakra-ui/react'
+import { Box, Button, Center, Container, Text } from '@chakra-ui/react'
 import { useEffect, useState } from "react";
 import GameHostClient from "../../logic/client";
 import { Errors, GamePhase, MessageType, Player, PlayerEnter, PlayerExit, ScoreChange, ToFinished, ToOnGoing, ToStarting } from "../../logic/entities";
@@ -10,6 +10,8 @@ import { GameBox } from "../../components/gameBox";
 import { inBrowser, LS_USERNAME_KEY } from "../../logic/utils";
 import { LinkIcon } from "@chakra-ui/icons";
 import { MotionBox, smoothIn, springTransition } from "../../logic/animations";
+import VerbumConfetti from "../../components/verbumConfetti";
+import toast from "react-hot-toast";
 
 type GameState = {
     gamePhase: GamePhase,
@@ -35,22 +37,16 @@ const Game: NextPage = () => {
     const gameId = router.query['gameId'];
     var username: string;
 
-    const toast = useToast();
-    const connectionToastIdRef = React.useRef<ToastId>();
+    var connectionValid : Promise<void>;
+    var resolveConnectionPromise: Function;
 
-    function closeConnectingToast() {
-        if (connectionToastIdRef.current) {
-            toast.close(connectionToastIdRef.current)
-        }
-    }
 
     function showConnectingToast() {
-        connectionToastIdRef.current = toast({
-            title: "Connection Lost. Retrying...",
-            status: "error",
-            isClosable: false,
-            duration: null
-        });
+        toast.promise(connectionValid, {
+            loading: "Connection Lost. Retrying...",
+            error: "Connection Failed. Check your connection and refresh.",
+            success: "Connection Reestablished."
+        })
     }
 
     useEffect(() => {
@@ -62,11 +58,16 @@ const Game: NextPage = () => {
 
         client.onDisconnect((ctx) => {
             if(ctx.reason != "client" || ctx.reconnect != false){
+                connectionValid = new Promise<void>((res) => {
+                    resolveConnectionPromise = res;
+                });
                 showConnectingToast();
             }
         });
         client.onConnect(() => {
-            closeConnectingToast();
+            if(resolveConnectionPromise != null){
+                resolveConnectionPromise();
+            }
             // Weird, I know. State is the initial object when the useEffect first runs, while s is the most recent state.
             client.hookGameCallbacks(handler, () => {
                 setState((s) =>
@@ -258,6 +259,7 @@ const Game: NextPage = () => {
 
     return (
         <Center w='100%' h='100%' flexDirection="column" justifyContent="space-between">
+            <VerbumConfetti run={state.gamePhase == "Finished" && state.userPlace == 1}/>   
             <MotionBox initial="hidden" animate="show" variants={smoothIn(0, -10)} transition={{ ...springTransition}} display="flex" marginTop="1em">
                 <Button variant="unstyled" onClick={() => router.push("/")}>
                     <Text className='antialiased' userSelect="none" as='i' fontSize='3xl' fontWeight='bold' marginTop="-1.5em">Verbum</Text>
@@ -265,15 +267,15 @@ const Game: NextPage = () => {
                 </Button>
             </MotionBox>
             <Container maxW='container.lg'>
-                <MotionBox layout initial="hidden" animate="show" variants={smoothIn(0, -50)} transition={springTransition}>
-                    <Button onClick={shareGame} marginLeft="1.8em" marginBottom="-1em" size="sm" rightIcon={<LinkIcon />} colorScheme='vgreen' variant='ghost'>
+                <MotionBox layout margin="0em 0em 0.4em 1.8em"  initial="hidden" animate="show" variants={smoothIn(0, -50)} transition={springTransition}>
+                    <Button onClick={shareGame} size="sm" rightIcon={<LinkIcon />} colorScheme='vgreen' variant='ghost'>
                         Share game link
                     </Button>
                 </MotionBox>
-                <Box display="flex" flexWrap="wrap" justifyContent="center">
+                <MotionBox layout display="flex" flexWrap="wrap" justifyContent="center">
                     <GameBox gamePhase={state.gamePhase} phaseDuration={state.phaseDuration} phaseStart={new Date().getTime() / 1000 - state.phaseStart} letters={state.letters} sendAttempt={sendAttempt} userPlace={state.userPlace} />
                     <ScoreTable players={state.players} />
-                </Box>
+                </MotionBox>
             </Container>
             <Box />
         </Center>

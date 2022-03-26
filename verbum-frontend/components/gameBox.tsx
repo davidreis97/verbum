@@ -1,4 +1,4 @@
-import { Box, Center, Divider, Input, Wrap, WrapItem, Text, AlertIcon, Alert, useToast, Progress, BoxProps, CircularProgress } from "@chakra-ui/react";
+import { Box, Center, Divider, Input, Wrap, WrapItem, Text, AlertIcon, Alert, Progress, BoxProps, CircularProgress } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import { GamePhase } from "../logic/entities";
 import { MotionBox, MotionText, smoothIn, springTransition, successIn } from "../logic/animations";
@@ -10,6 +10,7 @@ const VerbumConfetti = dynamic(
     { ssr: false },
 )
 import { Timer } from "./timer";
+import toast from "react-hot-toast";
 
 interface LetterBoxProps extends BoxProps {
     letter: string
@@ -29,38 +30,23 @@ export const GameBox = (props: { gamePhase: GamePhase, phaseDuration: number, ph
     var [wordsUsed, setWordsUsed] = useState<string[]>([]);
     var [word, setWord] = useState<string>("");
 
-    const toast = useToast();
-
     useEffect(() => {
         if(props.gamePhase == "Starting"){
             setWordsUsed(() => []);
+            setWord(() => "");
         }
     }, [props.gamePhase]);
-
-    if (props.gamePhase != "OnGoing") {
-        word = "";
-    }
 
     async function processEnter(e: React.KeyboardEvent<HTMLInputElement>): Promise<void> {
         if (e.key == "Enter" && word.length > 0) {
             if (wordsUsed.includes(word)) {
-                toast({
-                    title: 'Word already played.',
-                    status: 'error',
-                    duration: 1500,
-                    isClosable: false,
-                })
+                toast.error('Word already played.');
                 return;
             }
 
             for (var i = 0; i < word.length; i++) {
                 if (!props.letters.includes(word.charAt(i).toUpperCase())) {
-                    toast({
-                        title: `Letter "${word.charAt(i)}" not in game set.`,
-                        status: 'error',
-                        duration: 1500,
-                        isClosable: false,
-                    })
+                    toast.error(`Letter "${word.charAt(i)}" not in game set.`);
                     return;
                 }
             }
@@ -72,26 +58,20 @@ export const GameBox = (props: { gamePhase: GamePhase, phaseDuration: number, ph
                 return;
             }
 
-            toast({
-                title: `Not in word list.`,
-                status: 'error',
-                duration: 1500,
-                isClosable: false,
-            })
+            toast.error(`"${word}" not in word list.`);
         }
     }
 
     return (
-        <Box flexGrow="1">
-            <VerbumConfetti run={props.gamePhase == "Finished" && props.userPlace == 1}/>   
-            <MotionBox layout initial="hidden" animate="show" variants={smoothIn(0, -50)} transition={springTransition} overflow="hidden" minHeight="92px" margin="1em" backgroundColor="vgreen.800" boxShadow="2xl" borderRadius="2xl" display="flex" width="auto" style={{ justifyContent: "space-evenly" }}>    
+        <MotionBox margin="0em 1em 1em 1em" layout flexGrow="1">
+            <MotionBox marginBottom="1em" layout initial="hidden" animate="show" variants={smoothIn(0, -50)} transition={springTransition} overflow="hidden" minHeight="92px" backgroundColor="vgreen.800" boxShadow="2xl" borderRadius="2xl" display="flex" width="auto" style={{ justifyContent: "space-evenly" }}>    
                 {
                     (() => {
                         if (props.gamePhase == "Connecting") {
                             return (
-                                <MotionText initial="hidden" animate="show" variants={smoothIn(0, -50)} transition={springTransition} width="100%" display="flex" flexDir="column" alignItems="center" justifyContent="center">
+                                <MotionBox initial="hidden" animate="show" variants={smoothIn(0, -50)} transition={springTransition} width="100%" display="flex" flexDir="column" alignItems="center" justifyContent="center">
                                     <CircularProgress isIndeterminate color="vgreen.200" trackColor="rgb(0,0,0,0)" />
-                                </MotionText>
+                                </MotionBox>
                             )
                         } else if (props.gamePhase == "Starting") {
                             return (
@@ -125,7 +105,7 @@ export const GameBox = (props: { gamePhase: GamePhase, phaseDuration: number, ph
                     })()
                 }
             </MotionBox>
-            <MotionBox layout margin="2em 1em 2em 1em" boxShadow="2xl" borderRadius="2xl" initial="hidden" animate="show" variants={smoothIn(0, -50)} transition={springTransition}>
+            <MotionBox marginBottom="1em" layout boxShadow="2xl" borderRadius="2xl" initial="hidden" animate="show" variants={smoothIn(0, -50)} transition={springTransition}>
                 <Input id="wordinput"
                     onBlur={(e) => e.target.placeholder = "Type words..."}
                     onFocus={(e) => e.target.placeholder = ""}
@@ -142,21 +122,17 @@ export const GameBox = (props: { gamePhase: GamePhase, phaseDuration: number, ph
                     textAlign="center"
                     placeholder="Type words..." />
             </MotionBox>
-            <MotionBox initial="hidden" layout animate="show" variants={smoothIn(0, -50)} transition={springTransition} margin="1em" boxShadow="2xl" backgroundColor="#2C394B" borderRadius="2xl" padding="1em">
-                {wordsUsed.length == 0 ? <Text fontWeight="bold" color="gray.400" fontSize="xs">NO WORDS PLAYED YET</Text> :
-                    <Box>
-                        <MotionText initial="hidden" animate="show" variants={smoothIn(0, 0)} transition={springTransition} fontWeight="bold" color="gray.400" fontSize="xs">WORDS PLAYED</MotionText>
-                        <Wrap marginTop="0.6em">
-                            {wordsUsed.map((s, i) =>
-                                <WrapItem key={i}>
-                                    <MotionText initial="hidden" animate="show" variants={successIn()} transition={springTransition} >{capitalizeFirstLetter(s)}</MotionText>
-                                </WrapItem>
-                            )}
-                        </Wrap>
-                    </Box>
-                }
+            <MotionBox layout initial="hidden" animate="show" variants={smoothIn(0, -50)} transition={springTransition} boxShadow="2xl" backgroundColor="#2C394B" borderRadius="2xl" padding="1em">
+                <MotionText initial="hidden" animate="show" variants={smoothIn(0, 0)} transition={springTransition} fontWeight="bold" color="gray.400" fontSize="xs">{wordsUsed.length == 0 ? "NO WORDS PLAYED YET" : "WORDS PLAYED"}</MotionText>
+                <Wrap marginTop="0.6em">
+                    {wordsUsed.map((s, i) =>
+                        <WrapItem key={i}>
+                            <MotionText initial="hidden" animate="show" variants={successIn()} transition={springTransition} >{capitalizeFirstLetter(s)}</MotionText>
+                        </WrapItem>
+                    )}
+                </Wrap>
             </MotionBox>
-        </Box>
+        </MotionBox>
     )
 };
 

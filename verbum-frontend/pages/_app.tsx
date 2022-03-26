@@ -1,25 +1,27 @@
+import { CheckIcon, WarningIcon } from '@chakra-ui/icons';
 import { ChakraProvider, extendTheme } from '@chakra-ui/react'
 import { mode } from "@chakra-ui/theme-tools";
 import { AppProps } from 'next/app'
 import dynamic from "next/dynamic";
 import Head from 'next/head';
+import { DefaultToastOptions, ToastBar, Toaster } from 'react-hot-toast';
 import unusedModule from '../components/background';
 type ClientConfettiType = typeof unusedModule;
 const Background = dynamic(
-    () => import('../components/background').then((mod) => mod.Background) as Promise<ClientConfettiType>,
-    { ssr: false },
+  () => import('../components/background').then((mod) => mod.Background) as Promise<ClientConfettiType>,
+  { ssr: false },
 )
 import '../styles/global.css'
 
 const env = process.env.NODE_ENV
-if (env == "production"){
-  console.log = () => {}
+if (env == "production") {
+  console.log = () => { }
 }
 
-const theme = extendTheme({ 
-  config: { 
-    initialColorMode: 'dark', 
-    useSystemColorMode: false 
+const theme = extendTheme({
+  config: {
+    initialColorMode: 'dark',
+    useSystemColorMode: false
   },
   colors: {
     bronze: {
@@ -51,11 +53,37 @@ const theme = extendTheme({
   styles: {
     global: (props: any) => ({
       body: {
-        bg: mode("gray.300","#171F2B")(props),
+        bg: mode("gray.300", "#171F2B")(props),
       }
     })
   },
 });
+
+var toastOptions: DefaultToastOptions = {
+  error: {
+    style: {
+      backgroundColor: "var(--chakra-colors-red-200)",
+      color: "var(--chakra-colors-blackAlpha-900)",
+    },
+    icon: <WarningIcon color="blackAlpha.900" />,
+    position: "bottom-center"
+  },
+  success: {
+    style: {
+      backgroundColor: "var(--chakra-colors-green-200)",
+      color: "var(--chakra-colors-blackAlpha-900)",
+    },
+    icon: <CheckIcon color="blackAlpha.900" />,
+    position: "bottom-center"
+  },
+  loading: {
+    style: {
+      backgroundColor: "var(--chakra-colors-orange-200)",
+      color: "var(--chakra-colors-blackAlpha-900)",
+    },
+    position: "bottom-center"
+  }
+}
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -66,6 +94,15 @@ function MyApp({ Component, pageProps }: AppProps) {
       </Head>
       <Background/>
       <Component {...pageProps} />
+      <Toaster toastOptions={toastOptions}>
+        {(t) => (
+          <ToastBar
+            toast={t}
+            style={{marginBottom: "2em", marginTop:"-2em"}} // Overwrite styles
+            position="top-center" // Used to adapt the animation
+          />
+        )}
+      </Toaster>
     </ChakraProvider>
   )
 }

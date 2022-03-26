@@ -1,15 +1,17 @@
 import type { NextPage } from 'next'
-import { Box, Center, Input, Text, Container, Button, useToast, Heading } from '@chakra-ui/react'
+import { Box, Center, Input, Container, Button, Heading } from '@chakra-ui/react'
 import { useEffect, useState } from 'react';
 import { inBrowser, LS_USERNAME_KEY } from '../logic/utils';
 import { Errors, MatchmakeResponse } from '../logic/entities';
 import { useRouter } from 'next/router';
 import { MotionBox, smoothIn, springTransition } from '../logic/animations';
+import toast from 'react-hot-toast';
+
+const MAX_USERNAME_LENGTH = 20;
 
 const Home: NextPage = () => {
     var [username, setUsername] = useState<string>(inBrowser() ? localStorage?.getItem(LS_USERNAME_KEY) ?? "" : "")
     var [loadingMatchmaking, setLoadingMatchmaking] = useState<boolean>(false);
-    var toast = useToast();
     const router = useRouter();
     const queryParams = router.query;
     var gameId = queryParams.gameId;
@@ -17,25 +19,16 @@ const Home: NextPage = () => {
 
     useEffect(() => {
         if (error == Errors.NoUsername){
-            toast({
-                title: 'Please enter a username before joining a room.',
-                status: 'info',
-                duration: 5000,
-                isClosable: true,
+            toast.error('Please enter a username before joining a room.', {
+                style: {backgroundColor: "var(--chakra-colors-vgreen-100)"}
             });
         }else if(error == Errors.RoomUnavailable){
-            toast({
-                title: 'The game you were joining has ended, please join a new one.',
-                status: 'warning',
-                duration: 5000,
-                isClosable: true,
+            toast.error('The game you were joining has ended, please join a new one.', {
+                style: {backgroundColor: "var(--chakra-colors-vgreen-100)"}
             });
         }else if(error == Errors.UserAlreadyExists){
-            toast({
-                title: 'Someone else picked that username, please set a different one.',
-                status: 'warning',
-                duration: 5000,
-                isClosable: true,
+            toast.error('Someone else in the room picked that username, please set a different one.', {
+                style: {backgroundColor: "var(--chakra-colors-vgreen-100)"}
             });
         }
     }, [error]);
@@ -46,14 +39,20 @@ const Home: NextPage = () => {
         }
     }
 
+    useEffect(() => {
+        if(username.length > MAX_USERNAME_LENGTH){
+            toast.error(`Please enter a shorter username. (Max ${MAX_USERNAME_LENGTH} characters)`);
+        }
+    }, [username.length > MAX_USERNAME_LENGTH])
+
     async function matchmake() {
         if (username == null || username.length == 0) {
-            toast({
-                title: 'Please enter a username.',
-                status: 'error',
-                duration: 2500,
-                isClosable: true,
-            });
+            toast.error('Please enter a username.');
+            return;
+        }
+
+        if (username.length > MAX_USERNAME_LENGTH){
+            toast.error(`Please enter a shorter username. (Max ${MAX_USERNAME_LENGTH} characters)`);
             return;
         }
 
@@ -82,7 +81,7 @@ const Home: NextPage = () => {
                         <Heading userSelect="none" as='i' fontSize='calc(3vw + 3vh + 2vmin);' fontWeight='bold' color="vgreen.500">.io</Heading>
                     </MotionBox>
                     <MotionBox initial="hidden" animate="show" variants={smoothIn(0, -50)} transition={springTransition} display="flex" w="100%">
-                        <Input onKeyDown={(e) => { if (e.key == "Enter") matchmake() }} focusBorderColor="vgreen.500" placeholder='Username' marginRight="1em" size="lg" onChange={(evt) => setUsername((_) => evt.target.value)} value={username} />
+                        <Input isInvalid={username.length > MAX_USERNAME_LENGTH} onKeyDown={(e) => { if (e.key == "Enter") matchmake() }} focusBorderColor="vgreen.500" placeholder='Username' marginRight="1em" size="lg" onChange={(evt) => setUsername((_) => evt.target.value)} value={username} />
                         <Button isLoading={loadingMatchmaking} _hover={{ bg: 'vgreen.600' }} _active={{ bg: 'vgreen.600' }} backgroundColor="vgreen.500" size="lg" onClick={() => matchmake()}>PLAY</Button>
                     </MotionBox>
                 </Center>
