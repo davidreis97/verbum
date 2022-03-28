@@ -35,7 +35,7 @@ export const Background = React.memo(() => {
     }
 
     return (
-        <Box overflow="hidden" zIndex={-100} position="absolute" width="100%" height="100%" opacity="0.2" filter="blur(4px)">
+        <Box overflow="hidden" zIndex={-100} position="fixed" width="100%" height="100%" opacity="0.2" filter="blur(4px)">
             { letterBoxes }
         </Box>
     )
