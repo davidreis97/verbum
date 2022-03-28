@@ -1,11 +1,13 @@
 import { CheckIcon, WarningIcon } from '@chakra-ui/icons';
-import { ChakraProvider, extendTheme } from '@chakra-ui/react'
+import { Box, ChakraProvider, extendTheme } from '@chakra-ui/react'
 import { mode } from "@chakra-ui/theme-tools";
 import { AppProps } from 'next/app'
 import dynamic from "next/dynamic";
 import Head from 'next/head';
 import { DefaultToastOptions, ToastBar, Toaster } from 'react-hot-toast';
 import unusedModule from '../components/background';
+import Footer from '../components/footer';
+import { MotionBox, smoothIn, springTransition } from '../logic/animations';
 type ClientConfettiType = typeof unusedModule;
 const Background = dynamic(
   () => import('../components/background').then((mod) => mod.Background) as Promise<ClientConfettiType>,
@@ -92,8 +94,18 @@ function MyApp({ Component, pageProps }: AppProps) {
         <title>Verbum.io</title>
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
       </Head>
+
       <Background/>
-      <Component {...pageProps} />
+
+      <Box display="flex" flexDirection="column">
+        <Box flexGrow={1}>
+          <Component {...pageProps} />
+        </Box>
+        <MotionBox initial="hidden" animate="show" variants={smoothIn(0, -10)} transition={{ ...springTransition}}>
+          <Footer/>
+        </MotionBox>
+      </Box>
+
       <Toaster toastOptions={toastOptions}>
         {(t) => (
           <ToastBar
