@@ -38,5 +38,8 @@ for set in possibleSets:
 
 scores = {k: v for k, v in sorted(scores.items(), key=lambda item: len(item[1]), reverse=True)}
 
-f = open("output_with_words.json", "w")
+f = open("output_with_words_60.json", "w")
+
+scores = dict(filter(lambda elem : len(elem[1]) > 60, scores.items()))
+
 json.dump({"wordset": [{"letterset": "".join(set), "words": scores[set]} for set in scores.keys()]}, f)
