@@ -5,8 +5,6 @@ import (
 	"errors"
 	"log"
 	"math/rand"
-	"sort"
-	"strings"
 	"time"
 	"unsafe"
 
@@ -33,16 +31,16 @@ type Player struct {
 type Room struct {
 	node    *centrifuge.Node
 	Id      string
-	letters map[rune]bool
 	state   GameState
 	players map[string]*Player
+	wordSet *WordSet
 }
 
-func NewRoom(node *centrifuge.Node) *Room {
+func NewRoom(node *centrifuge.Node, wl *WordList) *Room {
 	r := new(Room)
 
 	r.Id = RandStringBytesMaskImprSrcUnsafe(12)
-	r.RegenLetters()
+	r.RegenLetters(wl)
 	r.state = Unstarted
 	r.node = node
 	r.players = make(map[string]*Player)
@@ -52,21 +50,14 @@ func NewRoom(node *centrifuge.Node) *Room {
 	return r
 }
 
-func (r *Room) RegenLetters() {
-	r.letters = make(map[rune]bool)
-	vowels, consonants := RandomLetterSet(viper.GetInt("vowel_count"), viper.GetInt("consonant_count"))
-	for _, v := range vowels {
-		r.letters[v] = true
-	}
-	for _, c := range consonants {
-		r.letters[c] = true
-	}
+func (r *Room) RegenLetters(wl *WordList) {
+	r.wordSet = wl.GetRandomWordSet()
 }
 
-func (r *Room) ProcessWordAttempt(data *[]byte, player string, wordlist *[]string) *centrifuge.RPCReply {
+func (r *Room) ProcessWordAttempt(data *[]byte, player string) *centrifuge.RPCReply {
 	var attempt WordAttempt
 	json.Unmarshal(*data, &attempt)
-	valid, points := r.AttemptWord(player, attempt.Word, wordlist)
+	valid, points := r.AttemptWord(player, attempt.Word)
 
 	if valid {
 		r.AddPoints(player, points)
@@ -78,19 +69,9 @@ func (r *Room) ProcessWordAttempt(data *[]byte, player string, wordlist *[]strin
 	}
 }
 
-func (r *Room) AttemptWord(player string, word string, wordlist *[]string) (bool, int) {
-	for _, char := range word {
-		_, isAcceptedChar := r.letters[char]
-
-		if !isAcceptedChar {
-			return false, 0
-		}
-	}
-
-	i := sort.SearchStrings(*wordlist, strings.ToLower(word))
-
-	if i < 0 || i >= len(*wordlist) || (*wordlist)[i] != strings.ToLower(word) {
-		return false, 0 //Word is not valid english word
+func (r *Room) AttemptWord(player string, word string) (bool, int) {
+	if !r.wordSet.IsValidWord(word) {
+		return false, 0
 	}
 
 	if _, hasPlayed := r.players[player].wordsAttempted[word]; hasPlayed {
@@ -161,7 +142,7 @@ func (r *Room) ResetPlayers() {
 	}
 }
 
-func (r *Room) RunGame() {
+func (r *Room) RunGame(wl *WordList) {
 	r.state = Starting
 	_, err := r.BroadcastPayload(GenToStarting())
 	if err != nil {
@@ -175,13 +156,7 @@ func (r *Room) RunGame() {
 
 	r.state = OnGoing
 
-	letters := make([]rune, len(r.letters))
-	i := 0
-	for k := range r.letters {
-		letters[i] = k
-		i++
-	}
-	_, err = r.BroadcastPayload(GenToOnGoing(letters))
+	_, err = r.BroadcastPayload(GenToOnGoing([]rune(r.wordSet.LetterSet)))
 
 	if err != nil {
 		log.Println(err.Error())
@@ -200,11 +175,12 @@ func (r *Room) RunGame() {
 	time.Sleep(viper.GetDuration("finished_timer") * time.Second)
 
 	// TODO - CLEAN HISTORY IN ALL CHANNELS RELATED TO THIS GAME
+	// The above todo requires investigation - what happens if we resume subscription from id 40 and we only have 45 onwards?
 	r.ResetPlayers()
 
 	if len(r.players) > 0 {
-		r.RegenLetters()
-		r.RunGame()
+		r.RegenLetters(wl)
+		r.RunGame(wl)
 	}
 }
 
@@ -231,22 +207,4 @@ func RandStringBytesMaskImprSrcUnsafe(n int) string {
 	}
 
 	return *(*string)(unsafe.Pointer(&b))
-}
-
-var vowels = []rune("AEIOU")
-var consonants = []rune("BCDFGHJKLMNPQRSTVWXYZ")
-
-func RandomLetterSet(vowelCount int, consonantCount int) ([]rune, []rune) {
-	return GetRandomFromArray(vowelCount, vowels), GetRandomFromArray(consonantCount, consonants)
-}
-
-func GetRandomFromArray[K any](count int, slice []K) []K {
-	vowelSlice := make([]K, count)
-
-	p := rand.Perm(len(slice))
-	for i, vowelIndex := range p[:count] {
-		vowelSlice[i] = slice[vowelIndex]
-	}
-
-	return vowelSlice
 }

@@ -1,14 +1,12 @@
 {
-    "finished_timer": "15",
-    "ongoing_timer": "120",
+    "finished_timer": "12",
+    "ongoing_timer": "90",
     "starting_timer": "15",
-    "vowel_count": "3",
-    "consonant_count": "4",
     "allowed_origins": ["https://verbum.davidreis.me"],
-    "wordlist": "./wordlist3_groomed.txt",
+    "wordlist": "./output_with_words_60.json",
     "max_players": "10",
     "bind_address": "0.0.0.0:3000",
     "monitoring": "true",
-    "tlsCert": "/etc/letsencrypt/live/wsverbum.davidreis.me/fullchain.pem",
-    "tlsKey": "/etc/letsencrypt/live/wsverbum.davidreis.me/privkey.pem"
+    "tls_cert": "/etc/letsencrypt/live/wsverbum.davidreis.me/fullchain.pem",
+    "tls_key": "/etc/letsencrypt/live/wsverbum.davidreis.me/privkey.pem"
 }

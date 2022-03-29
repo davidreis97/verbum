@@ -9,12 +9,14 @@ type RoomManager struct {
 	rooms    map[string]*Room
 	nextRoom *Room
 	node     *centrifuge.Node
+	wordList *WordList
 }
 
-func NewRoomManager(node *centrifuge.Node) *RoomManager {
+func NewRoomManager(node *centrifuge.Node, wl *WordList) *RoomManager {
 	rm := new(RoomManager)
 	rm.node = node
 	rm.rooms = make(map[string]*Room)
+	rm.wordList = wl
 	return rm
 }
 
@@ -23,7 +25,8 @@ func (rm *RoomManager) RemoveRoom(id string) {
 }
 
 func (rm *RoomManager) StartRoomAndDispose(r *Room) {
-	rm.nextRoom.RunGame()
+	//It should be up to the manager whether the room should be restarted or not. Would avoid having to pass the entire wordlist here.
+	rm.nextRoom.RunGame(rm.wordList)
 	rm.RemoveRoom(r.Id)
 }
 
@@ -32,7 +35,7 @@ func (rm *RoomManager) GetNextRoom() *Room {
 		len(rm.nextRoom.players) >= viper.GetInt("max_players") ||
 		(rm.nextRoom.state != Unstarted && rm.nextRoom.state != Starting) {
 
-		rm.nextRoom = NewRoom(rm.node)
+		rm.nextRoom = NewRoom(rm.node, rm.wordList)
 		rm.rooms[rm.nextRoom.Id] = rm.nextRoom
 		go rm.StartRoomAndDispose(rm.nextRoom)
 	}

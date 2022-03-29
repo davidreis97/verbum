@@ -1,12 +1,10 @@
 package main
 
 import (
-	"bufio"
 	"context"
 	"log"
 	"math/rand"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/centrifugal/centrifuge"
@@ -33,7 +31,7 @@ func main() {
 	// Initialize config
 
 	config.InitializeDefaults()
-	//config.save() // Uncomment to save default values to file (OVERWRITES EXISTING CONFIG)
+	//config.save() // Uncomment to save default values to file (OVERWRITES EXISTING FILE)
 	config.Load()
 	config.Watch()
 
@@ -43,16 +41,11 @@ func main() {
 
 	// Load Wordlist
 
-	wordlist, err := LoadWordlist(viper.GetString("wordlist"))
+	wordlist, err := model.Load(viper.GetString("wordlist"))
 
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	// Wordlist Grooming
-	// sort.Strings(*wordlist)
-	// SaveWordlist("wordlist3_groomed.txt", *wordlist)
-	// os.Exit(0)
 
 	// Setup Centrifuge
 
@@ -70,7 +63,7 @@ func main() {
 	})
 	node.SetBroker(broker)
 
-	roomManager := model.NewRoomManager(node)
+	roomManager := model.NewRoomManager(node, wordlist)
 
 	node.OnConnecting(func(ctx context.Context, evt centrifuge.ConnectEvent) (centrifuge.ConnectReply, error) {
 		return centrifuge.ConnectReply{
@@ -119,7 +112,7 @@ func main() {
 			}
 
 			if e.Method == "WordAttempt" {
-				cb(*room.ProcessWordAttempt(&e.Data, client.UserID(), wordlist), nil)
+				cb(*room.ProcessWordAttempt(&e.Data, client.UserID()), nil)
 				return
 			}
 			cb(centrifuge.RPCReply{}, centrifuge.ErrorMethodNotFound)
@@ -162,8 +155,8 @@ func main() {
 		})
 	})
 
-	tlsCert := viper.GetString("tlsCert")
-	tlsKey := viper.GetString("tlsKey")
+	tlsCert := viper.GetString("tls_cert")
+	tlsKey := viper.GetString("tls_key")
 	if len(tlsCert) > 0 && len(tlsKey) > 0 {
 		log.Println("Running in HTTPS Mode")
 		httpServer.RunTLS(viper.GetString("bind_address"), tlsCert, tlsKey)
@@ -196,36 +189,4 @@ func Contains(s []string, str string) bool {
 	}
 
 	return false
-}
-
-func LoadWordlist(path string) (*[]string, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	var lines []string
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
-	}
-	return &lines, scanner.Err()
-}
-
-func SaveWordlist(path string, wordlist []string) {
-	file, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-
-	if err != nil {
-		log.Fatalf("failed creating file: %s", err)
-	}
-
-	datawriter := bufio.NewWriter(file)
-
-	for _, data := range wordlist {
-		_, _ = datawriter.WriteString(data + "\n")
-	}
-
-	datawriter.Flush()
-	file.Close()
 }

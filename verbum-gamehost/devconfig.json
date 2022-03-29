@@ -1,11 +1,9 @@
 {
     "finished_timer": "15",
-    "ongoing_timer": "120",
+    "ongoing_timer": "90",
     "starting_timer": "15",
-    "vowel_count": "3",
-    "consonant_count": "4",
     "allowed_origins": ["http://localhost:3000"],
-    "wordlist": "./wordlist3_groomed.txt",
+    "wordlist": "./output_with_words_60.json",
     "max_players": "10",
     "bind_address": "0.0.0.0:8080",
     "monitoring": "false"
