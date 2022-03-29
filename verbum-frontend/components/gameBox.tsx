@@ -77,7 +77,7 @@ export const GameBox = (props: { gamePhase: GamePhase, phaseDuration: number, ph
                             return (
                                 <Box width="100%" display="flex" flexDir="column" alignItems="center">
                                     <Box flexGrow="1"/>
-                                    <MotionText flexGrow="1" initial="hidden" animate="show" variants={smoothIn(0, -50)} transition={springTransition} fontSize="4xl">Starting...</MotionText>
+                                    <MotionText flexGrow="1" initial="hidden" animate="show" variants={smoothIn(0, -50)} transition={springTransition} fontSize="3xl">Waiting for players...</MotionText>
                                     <Timer key={0} growing={true} initialTime={props.phaseStart} time={props.phaseDuration} withWarning={false} />
                                 </Box>
                             )
