@@ -1,28 +1,25 @@
-import { Box, Center, Divider, Input, Wrap, WrapItem, Text, AlertIcon, Alert, Progress, BoxProps, CircularProgress } from "@chakra-ui/react";
+import { Box, Center, Divider, Input, Wrap, WrapItem, Text, AlertIcon, Alert, Progress, BoxProps, CircularProgress, Button, ButtonProps, Icon } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import { GamePhase } from "../logic/entities";
 import { MotionBox, MotionText, smoothIn, springTransition, successIn } from "../logic/animations";
-import dynamic from "next/dynamic";
-import unusedModule from "./verbumConfetti";
-type ClientConfettiType = typeof unusedModule;
-const VerbumConfetti = dynamic(
-    () => import('./verbumConfetti').then((mod) => mod.VerbumConfetti) as Promise<ClientConfettiType>,
-    { ssr: false },
-)
 import { Timer } from "./timer";
 import toast from "react-hot-toast";
+import { IoReturnDownBackOutline, IoBackspaceOutline } from "react-icons/io5"
 
-interface LetterBoxProps extends BoxProps {
-    letter: string
+interface LetterBoxProps extends ButtonProps {
+    letter: string,
+    setLetter: (letter :string) => void
 }
 
 export const LetterBox = (props: LetterBoxProps) => {
+    var {letter,setLetter, ...other} = props;
+
     return (
-        <Box {...props} boxShadow="2xl" margin="1em 0.5em 1em 0.5em" padding="0.1em 1.6em 0em 1.6em" backgroundColor="vgreen.999" borderWidth='0px' borderRadius='2xl' width="3em">
+        <Button {...other} onClick={()=>{props.setLetter(props.letter);}} boxShadow="2xl" margin="1em 0.5em 1em 0.5em" padding="0em 1.6em 0em 1.6em" backgroundColor="vgreen.999" borderWidth='0px' borderRadius='2xl' height="3.3em" width="3em">
             <Center>
                 <Text fontSize="4xl" fontWeight="bold">{props.letter}</Text>
             </Center>
-        </Box>
+        </Button>
     );
 }
 
@@ -37,8 +34,8 @@ export const GameBox = (props: { gamePhase: GamePhase, phaseDuration: number, ph
         }
     }, [props.gamePhase]);
 
-    async function processEnter(e: React.KeyboardEvent<HTMLInputElement>): Promise<void> {
-        if (e.key == "Enter" && word.length > 0) {
+    async function sendWord(): Promise<void> {
+        if (word.length > 0) {
             if (wordsUsed.includes(word)) {
                 toast.error('Word already played.');
                 return;
@@ -86,8 +83,8 @@ export const GameBox = (props: { gamePhase: GamePhase, phaseDuration: number, ph
                                 <Box width="100%" display="flex" flexDir="column" alignItems="center">
                                     <Box flexGrow="1" flexWrap="wrap" display="flex" style={{ justifyContent: "space-evenly" }}>
                                         {props.letters.map((l, i) =>
-                                            <MotionBox key={i} initial="hidden" animate="show" variants={smoothIn(0, -10)} transition={{ ...springTransition, delay: i * 0.1 }}>
-                                                <LetterBox letter={l} key={i} />
+                                            <MotionBox display="flex" alignItems="center" key={i} initial="hidden" animate="show" variants={smoothIn(0, -10)} transition={{ ...springTransition, delay: i * 0.1 }}>
+                                                <LetterBox setLetter={(letter: string) => {setWord((w) => capitalizeFirstLetter((w+letter).replace(/[^a-zA-Z]/gi, '')))}} letter={l} key={i} />
                                             </MotionBox>)}
                                     </Box>
                                     <Timer key={1} growing={false} initialTime={props.phaseStart} time={props.phaseDuration} withWarning={true} />
@@ -105,9 +102,9 @@ export const GameBox = (props: { gamePhase: GamePhase, phaseDuration: number, ph
                     })()
                 }
             </MotionBox>
-            <MotionBox marginBottom="1em" layout boxShadow="2xl" borderRadius="2xl" initial="hidden" animate="show" variants={smoothIn(0, -50)} transition={springTransition}>
+            <MotionBox position="relative" marginBottom="1em" layout boxShadow="xl" borderRadius="2xl" initial="hidden" animate="show" variants={smoothIn(0, -50)} transition={springTransition}>
                 <Input id="wordinput"
-                    onBlur={(e) => e.target.placeholder = "Type words..."}
+                    onBlur={(e) => e.target.placeholder = "Type words here or press the letters!"}
                     onFocus={(e) => e.target.placeholder = ""}
                     autoComplete="off"
                     focusBorderColor="vgreen.999"
@@ -115,12 +112,15 @@ export const GameBox = (props: { gamePhase: GamePhase, phaseDuration: number, ph
                     borderRadius="2xl"
                     value={word}
                     onChange={(e) => setWord(() => capitalizeFirstLetter(e.target.value.replace(/[^a-zA-Z]/gi, '')))}
-                    onKeyDown={(e) => processEnter(e)}
+                    onKeyDown={(e) => e.key == "Enter" ? sendWord() : null}
                     isDisabled={props.gamePhase != "OnGoing"}
                     variant="filled"
                     size="lg"
                     textAlign="center"
-                    placeholder="Type words..." />
+                    placeholder="Type words here or press the letters!" />
+                <Box height="3em" width="7em" position="absolute" top="0em" right="0em" /> {/*Stops input below the buttons */}
+                <Button isDisabled={props.gamePhase != "OnGoing"} onClick={() => sendWord()} padding="0 12px 0 12px" position="absolute" borderRadius="1em" right="0.2em" top="0.229em" colorScheme="vgreen" ><Icon boxSize="1.3em" as={IoReturnDownBackOutline} /></Button>
+                <Button isDisabled={props.gamePhase != "OnGoing"} onClick={() => setWord((w) => w.slice(0,-1))} padding="0 12px 0 12px" position="absolute" borderRadius="1em" right="3.2em" top="0.229em"><Icon boxSize="1.3em" as={IoBackspaceOutline} /></Button>
             </MotionBox>
             <MotionBox layout initial="hidden" animate="show" variants={smoothIn(0, -50)} transition={springTransition} boxShadow="2xl" backgroundColor="#2C394B" borderRadius="2xl" padding="1em">
                 <MotionText initial="hidden" animate="show" variants={smoothIn(0, 0)} transition={springTransition} fontWeight="bold" color="gray.400" fontSize="xs">{wordsUsed.length == 0 ? "NO WORDS PLAYED YET" : "WORDS PLAYED"}</MotionText>
@@ -137,7 +137,7 @@ export const GameBox = (props: { gamePhase: GamePhase, phaseDuration: number, ph
 };
 
 function capitalizeFirstLetter(s: string) {
-    return s.charAt(0).toUpperCase() + s.slice(1);
+    return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
 }
 
 const english_ordinal_rules = new Intl.PluralRules("en", { type: "ordinal" });

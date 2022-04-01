@@ -10,7 +10,13 @@ import { GameBox } from "../../components/gameBox";
 import { inBrowser, LS_USERNAME_KEY } from "../../logic/utils";
 import { LinkIcon } from "@chakra-ui/icons";
 import { MotionBox, smoothIn, springTransition } from "../../logic/animations";
-import VerbumConfetti from "../../components/verbumConfetti";
+import dynamic from "next/dynamic";
+import unusedModule from "../../components/verbumConfetti";
+type ClientConfettiType = typeof unusedModule;
+const VerbumConfetti = dynamic(
+    () => import('../../components/verbumConfetti').then((mod) => mod.VerbumConfetti) as Promise<ClientConfettiType>,
+    { ssr: false },
+)
 import toast from "react-hot-toast";
 
 type GameState = {
