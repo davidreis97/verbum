@@ -72,7 +72,7 @@ export const GameBox = (props: { initialWordsUsed: string[], gamePhase: GamePhas
 
     return (
         <MotionBox margin="0em 1em 1em 1em" layout flexGrow="1">
-            <MotionBox marginBottom="1em" layout initial="hidden" animate="show" variants={smoothIn(0, -50)} transition={springTransition} overflow="hidden" minHeight="92px" backgroundColor="vgreen.800" boxShadow="2xl" borderRadius="2xl" display="flex" width="auto" style={{ justifyContent: "space-evenly" }}>    
+            <MotionBox marginBottom="1em" layout overflow="hidden" minHeight="92px" backgroundColor="vgreen.800" boxShadow="2xl" borderRadius="2xl" display="flex" width="auto" style={{ justifyContent: "space-evenly" }}>    
                 {
                     (() => {
                         if (props.gamePhase == "Connecting") {
@@ -113,7 +113,7 @@ export const GameBox = (props: { initialWordsUsed: string[], gamePhase: GamePhas
                     })()
                 }
             </MotionBox>
-            <MotionBox position="relative" marginBottom="1em" layout boxShadow="xl" borderRadius="2xl" initial="hidden" animate="show" variants={smoothIn(0, -50)} transition={springTransition}>
+            <MotionBox position="relative" marginBottom="1em" layout boxShadow="xl" borderRadius="2xl">
                 <Input id="wordinput"
                     onBlur={(e) => e.target.placeholder = "Type here!"}
                     onFocus={(e) => e.target.placeholder = ""}
@@ -133,8 +133,8 @@ export const GameBox = (props: { initialWordsUsed: string[], gamePhase: GamePhas
                 <Button isDisabled={props.gamePhase != "OnGoing"} onClick={() => sendWord()} padding="0 12px 0 12px" position="absolute" borderRadius="1em" right="0.2em" top="0.229em" colorScheme="vgreen" ><Icon boxSize="1.3em" as={IoReturnDownBackOutline} /></Button>
                 <Button isDisabled={props.gamePhase != "OnGoing"} onClick={() => setWord((w) => w.slice(0,-1))} padding="0 12px 0 12px" position="absolute" borderRadius="1em" right="3.2em" top="0.229em"><Icon boxSize="1.3em" as={IoBackspaceOutline} /></Button>
             </MotionBox>
-            <MotionBox layout initial="hidden" animate="show" variants={smoothIn(0, -50)} transition={springTransition} boxShadow="2xl" backgroundColor="#2C394B" borderRadius="2xl" padding="1em">
-                <MotionText initial="hidden" animate="show" variants={smoothIn(0, 0)} transition={springTransition} fontWeight="bold" color="gray.400" fontSize="xs">{wordsUsed.length == 0 ? "NO WORDS PLAYED YET" : "WORDS PLAYED"}</MotionText>
+            <MotionBox layout boxShadow="2xl" backgroundColor="#2C394B" borderRadius="2xl" padding="1em">
+                <MotionText fontWeight="bold" color="gray.400" fontSize="xs">{wordsUsed.length == 0 ? "NO WORDS PLAYED YET" : "WORDS PLAYED"}</MotionText>
                 <Wrap marginTop="0.6em">
                     {wordsUsed.map((s, i) =>
                         <WrapItem key={i}>

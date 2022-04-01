@@ -306,7 +306,7 @@ const Game: NextPage = () => {
                         Share game link
                     </Button>
                 </MotionBox>
-                <MotionBox layout display="flex" flexWrap="wrap" justifyContent="center">
+                <MotionBox initial="hidden" animate="show" variants={smoothIn(0, -50)} transition={springTransition} layout display="flex" flexWrap="wrap" justifyContent="center">
                     <GameBox initialWordsUsed={state.initialWordsUsed} gamePhase={state.gamePhase} phaseDuration={state.phaseDuration} phaseStart={new Date().getTime() / 1000 - state.phaseStart} letters={state.letters} sendAttempt={sendAttempt} userPlace={state.userPlace} />
                     <ScoreTable players={state.players} />
                 </MotionBox>

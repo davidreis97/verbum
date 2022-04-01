@@ -24,7 +24,7 @@ export const ScoreTable = (props: { players: Player[] }) => {
     }
 
     return (
-        <MotionBox marginBottom="1em" layout initial="hidden" animate="show" variants={smoothIn(0, -50)} transition={springTransition} scrollPadding="10px" width="280px" maxHeight="35em" overflowY="scroll" boxShadow="2xl" backgroundColor="#2C394B" borderRadius="2xl" paddingTop="1em" paddingBottom="1em">
+        <MotionBox marginBottom="1em" layout scrollPadding="10px" width="280px" maxHeight="35em" overflowY="scroll" boxShadow="2xl" backgroundColor="#2C394B" borderRadius="2xl" paddingTop="1em" paddingBottom="1em">
             <Box display="flex" margin="0 0.5em 0.5em 0.5em">
                 <Box width="45px" paddingRight="0"></Box>
                 <Text width="130px" paddingLeft="0" fontWeight="bold" color="gray.400" fontSize="xs">PLAYER</Text>
