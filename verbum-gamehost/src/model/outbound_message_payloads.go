@@ -97,3 +97,14 @@ type wordRejected struct {
 func GenWordRejected() wordRejected {
 	return wordRejected{Type: "WordRejected"}
 }
+
+//WordsSoFar
+
+type wordsSoFar struct {
+	Type  string
+	Words []string
+}
+
+func GenWordsSoFar(words []string) wordsSoFar {
+	return wordsSoFar{Type: "WordsSoFar", Words: words}
+}

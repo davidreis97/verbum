@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import { Box, Button, Center, Container, Text } from '@chakra-ui/react'
 import { useEffect, useState } from "react";
 import GameHostClient from "../../logic/client";
-import { Errors, GamePhase, MessageType, Player, PlayerEnter, PlayerExit, ScoreChange, ToFinished, ToOnGoing, ToStarting } from "../../logic/entities";
+import { Errors, GamePhase, MessageType, Player, PlayerEnter, PlayerExit, ScoreChange, ToFinished, ToOnGoing, ToStarting, WordsSoFar } from "../../logic/entities";
 import React from "react";
 import { ScoreTable } from "../../components/score";
 import { GameBox } from "../../components/gameBox";
@@ -27,6 +27,9 @@ type GameState = {
     letters: string[],
     client: GameHostClient | null,
     userPlace: number,
+    // If the player is reconnecting, the words that he previously played will be here. 
+    // This value will not be kept up to date throughout the game.
+    initialWordsUsed: string[] 
 };
 
 const Game: NextPage = () => {
@@ -37,7 +40,8 @@ const Game: NextPage = () => {
         players: [],
         letters: [],
         client: null,
-        userPlace: 1
+        userPlace: 1,
+        initialWordsUsed: []
     });
     const router = useRouter();
     const gameId = router.query['gameId'];
@@ -75,7 +79,7 @@ const Game: NextPage = () => {
                 resolveConnectionPromise();
             }
             // Weird, I know. State is the initial object when the useEffect first runs, while s is the most recent state.
-            client.hookGameCallbacks(handler, () => {
+            client.hookGameCallbacks(handleGameMessages, () => {
                 setState((s) =>
                 ({
                     ...s,
@@ -88,6 +92,9 @@ const Game: NextPage = () => {
                 }))
             }, errorHandler);
         });
+
+        client.hookDirectMessageCallbacks(handleDirectMessages);
+
         client.connect();
 
         console.log("Setting client for room " + gameId);
@@ -188,6 +195,11 @@ const Game: NextPage = () => {
         return state.client.attemptWord(word);
     }
 
+    function wordsSoFar(data: WordsSoFar) {
+        console.log("THINGS");
+        setState((s) => ({...s, initialWordsUsed: data.Words}));
+    }    
+
     const modifyStateNoRerender = (s: React.SetStateAction<GameState>) => {
         if (s instanceof Function) {
             state = s(state)
@@ -196,7 +208,26 @@ const Game: NextPage = () => {
         }
     }
 
-    function handler(ctx: any, isHistory: boolean) {
+    function handleDirectMessages(data: any){
+        var msgType = data?.Type as MessageType;
+
+        if (msgType == null) {
+            console.log("Strange game message!", data);
+            return;
+        }
+
+        console.log("Direct", msgType, data);
+
+        switch (msgType){
+            case "WordsSoFar":
+                wordsSoFar(data as WordsSoFar);
+                break;
+            default:
+                console.log("Not a direct message, wrong callback!", data);
+        }
+    }
+
+    function handleGameMessages(ctx: any, isHistory: boolean) {
         var msgType = ctx?.data?.Type as MessageType;
 
         if (msgType == null) {
@@ -231,6 +262,8 @@ const Game: NextPage = () => {
             case "ToStarting":
                 toStarting(ctx.data as ToStarting, modifyState);
                 break;
+            default:
+                console.log("Not a game message, wrong callback!", ctx);
         }
     }
 
@@ -274,7 +307,7 @@ const Game: NextPage = () => {
                     </Button>
                 </MotionBox>
                 <MotionBox layout display="flex" flexWrap="wrap" justifyContent="center">
-                    <GameBox gamePhase={state.gamePhase} phaseDuration={state.phaseDuration} phaseStart={new Date().getTime() / 1000 - state.phaseStart} letters={state.letters} sendAttempt={sendAttempt} userPlace={state.userPlace} />
+                    <GameBox initialWordsUsed={state.initialWordsUsed} gamePhase={state.gamePhase} phaseDuration={state.phaseDuration} phaseStart={new Date().getTime() / 1000 - state.phaseStart} letters={state.letters} sendAttempt={sendAttempt} userPlace={state.userPlace} />
                     <ScoreTable players={state.players} />
                 </MotionBox>
             </Container>

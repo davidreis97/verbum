@@ -51,6 +51,12 @@ class GameHostClient {
         }
     }
 
+    async hookDirectMessageCallbacks(handler: (ctx: any) => void){
+        this.centrifuge.on('message', function(data){
+            handler(data);
+        });
+    }
+
     async hookGameCallbacks(handler: (ctx: any, isHistory: boolean) => void, historyDone: () => void, errorHandler: (code: number) => void){
         if(this.isSubscribed(this.roomId)) {
             console.log("Already subscribed - skipping subscriptions");

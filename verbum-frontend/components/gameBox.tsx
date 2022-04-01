@@ -23,8 +23,8 @@ export const LetterBox = (props: LetterBoxProps) => {
     );
 }
 
-export const GameBox = (props: { gamePhase: GamePhase, phaseDuration: number, phaseStart: number, letters: string[], sendAttempt: (word: string) => Promise<[boolean, number]>, userPlace: number }) => {
-    var [wordsUsed, setWordsUsed] = useState<string[]>([]);
+export const GameBox = (props: { initialWordsUsed: string[], gamePhase: GamePhase, phaseDuration: number, phaseStart: number, letters: string[], sendAttempt: (word: string) => Promise<[boolean, number]>, userPlace: number }) => {
+    var [wordsUsed, setWordsUsed] = useState<string[]>(props.initialWordsUsed);
     var [word, setWord] = useState<string>("");
 
     useEffect(() => {
@@ -34,8 +34,17 @@ export const GameBox = (props: { gamePhase: GamePhase, phaseDuration: number, ph
         }
     }, [props.gamePhase]);
 
+    useEffect(() => {
+        setWordsUsed(() => props.initialWordsUsed);
+    }, [props.initialWordsUsed]);
+
     async function sendWord(): Promise<void> {
         if (word.length > 0) {
+            if (word.at(-1) == "s") {
+                toast.error('Plural with "s" not allowed.');
+                return;
+            }
+
             if (wordsUsed.includes(word)) {
                 toast.error('Word already played.');
                 return;
@@ -56,6 +65,8 @@ export const GameBox = (props: { gamePhase: GamePhase, phaseDuration: number, ph
             }
 
             toast.error(`"${word}" not in word list.`);
+        }else{
+            toast.error(`Type a word to play!`);
         }
     }
 
@@ -104,7 +115,7 @@ export const GameBox = (props: { gamePhase: GamePhase, phaseDuration: number, ph
             </MotionBox>
             <MotionBox position="relative" marginBottom="1em" layout boxShadow="xl" borderRadius="2xl" initial="hidden" animate="show" variants={smoothIn(0, -50)} transition={springTransition}>
                 <Input id="wordinput"
-                    onBlur={(e) => e.target.placeholder = "Type words here or press the letters!"}
+                    onBlur={(e) => e.target.placeholder = "Type here!"}
                     onFocus={(e) => e.target.placeholder = ""}
                     autoComplete="off"
                     focusBorderColor="vgreen.999"
@@ -117,7 +128,7 @@ export const GameBox = (props: { gamePhase: GamePhase, phaseDuration: number, ph
                     variant="filled"
                     size="lg"
                     textAlign="center"
-                    placeholder="Type words here or press the letters!" />
+                    placeholder="Type here!" />
                 <Box height="3em" width="7em" position="absolute" top="0em" right="0em" /> {/*Stops input below the buttons */}
                 <Button isDisabled={props.gamePhase != "OnGoing"} onClick={() => sendWord()} padding="0 12px 0 12px" position="absolute" borderRadius="1em" right="0.2em" top="0.229em" colorScheme="vgreen" ><Icon boxSize="1.3em" as={IoReturnDownBackOutline} /></Button>
                 <Button isDisabled={props.gamePhase != "OnGoing"} onClick={() => setWord((w) => w.slice(0,-1))} padding="0 12px 0 12px" position="absolute" borderRadius="1em" right="3.2em" top="0.229em"><Icon boxSize="1.3em" as={IoBackspaceOutline} /></Button>

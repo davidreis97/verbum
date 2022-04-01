@@ -8,8 +8,9 @@ export type ScoreChangeType = "ScoreChange"
 export type ToFinishedType = "ToFinished"
 export type WordApprovedType = "WordApproved"
 export type WordRejectedType = "WordRejected"
+export type WordsSoFarType = "WordsSoFar"
 
-export type MessageType = ToStartingType | PlayerEnterType | PlayerExitType | ToOnGoingType | ScoreChangeType | ToFinishedType | WordApprovedType | WordRejectedType
+export type MessageType = ToStartingType | PlayerEnterType | PlayerExitType | ToOnGoingType | ScoreChangeType | ToFinishedType | WordApprovedType | WordRejectedType | WordsSoFarType
 
 export interface ToStarting {
     Type: ToStartingType,
@@ -53,6 +54,13 @@ export interface WordApproved {
 
 export interface WordRejected {
     Type: WordRejectedType
+}
+
+// Direct Messages
+
+export interface WordsSoFar{
+    Type: WordsSoFarType,
+    Words: string[]
 }
 
 // RPC WordAttempt

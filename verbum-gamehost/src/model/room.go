@@ -90,14 +90,24 @@ func (r *Room) AddPoints(player string, scoreDiff int) {
 	r.BroadcastPayload(GenScoreChange(player, scoreDiff))
 }
 
-func (r *Room) AddPlayer(playerName string) error {
+func (r *Room) AddPlayer(playerName string) ([]string, error) {
 	p, playerAlreadyExists := r.players[playerName]
+
+	var wordsSoFar []string = nil
 
 	if playerAlreadyExists {
 		if p.connected {
-			return errors.New("player_already_exists")
+			return nil, errors.New("player_already_exists")
 		} else {
 			p.connected = true
+
+			wordsSoFar = make([]string, len(p.wordsAttempted))
+
+			i := 0
+			for k := range p.wordsAttempted {
+				wordsSoFar[i] = k
+				i++
+			}
 		}
 	} else {
 		p = &Player{
@@ -112,7 +122,7 @@ func (r *Room) AddPlayer(playerName string) error {
 
 	r.BroadcastPayload(GenPlayerEnter(playerName))
 
-	return nil
+	return wordsSoFar, nil
 }
 
 func (r *Room) DropPlayer(playerName string) {
@@ -134,6 +144,7 @@ func (r *Room) BroadcastPayload(message interface{}) (*centrifuge.PublishResult,
 
 func (r *Room) ResetPlayers() {
 	for name, player := range r.players {
+		player.wordsAttempted = make(map[string]bool)
 		if !player.connected {
 			delete(r.players, name)
 		} else {

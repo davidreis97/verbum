@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"math/rand"
 	"net/http"
@@ -66,6 +67,10 @@ func main() {
 	roomManager := model.NewRoomManager(node, wordlist)
 
 	node.OnConnecting(func(ctx context.Context, evt centrifuge.ConnectEvent) (centrifuge.ConnectReply, error) {
+		if len(evt.Name) < 0 || len(evt.Name) > 20 {
+			return centrifuge.ConnectReply{}, centrifuge.ErrorBadRequest
+		}
+
 		return centrifuge.ConnectReply{
 			Credentials: &centrifuge.Credentials{
 				UserID: evt.Name,
@@ -86,12 +91,20 @@ func main() {
 				return
 			}
 
-			err = room.AddPlayer(client.UserID())
+			wordsSoFar, err := room.AddPlayer(client.UserID())
 
 			if err != nil {
 				room = nil
 				cb(centrifuge.SubscribeReply{}, centrifuge.ErrorLimitExceeded)
 				return
+			}
+
+			//Should move this logic to the Room file at some point
+			if wordsSoFar != nil && len(wordsSoFar) > 0 {
+				jsonMessage, err := json.Marshal(model.GenWordsSoFar(wordsSoFar))
+				if err == nil { //This is best effort, no worries if the client misses it. However, we should log something if this fails.
+					client.Send(jsonMessage)
+				}
 			}
 
 			cb(centrifuge.SubscribeReply{Options: centrifuge.SubscribeOptions{Position: true, Recover: true, RecoverSince: &centrifuge.StreamPosition{Offset: 0}}}, nil)
