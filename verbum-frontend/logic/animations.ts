@@ -1,5 +1,5 @@
-import { Box, Text } from "@chakra-ui/react";
-import { motion } from "framer-motion";
+import { Box, BoxProps, Text, TextProps } from "@chakra-ui/react";
+import { CustomDomComponent, motion, MotionProps } from "framer-motion";
 
 export const smoothIn = (x: number, y: number) => ({ hidden: { x, y, opacity: 0 }, show: { x: 0, y: 0, opacity: 1 } })
 // DARKMODEWARN
@@ -11,5 +11,5 @@ export const springTransition = {
     stiffness: 300,
 };
 
-export const MotionBox = motion(Box);
-export const MotionText = motion(Text);
+export const MotionBox = motion(Box) as CustomDomComponent<BoxProps | MotionProps>;
+export const MotionText = motion(Text) as CustomDomComponent<TextProps | MotionProps>;
