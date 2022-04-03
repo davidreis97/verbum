@@ -15,9 +15,9 @@ export const LetterBox = (props: LetterBoxProps) => {
     var {letter,setLetter, ...other} = props;
 
     return (
-        <Button {...other} onMouseDown={()=>{props.setLetter?.(props.letter);}} boxShadow="2xl" margin="1em 0.5em 1em 0.5em" padding="0em 1.6em 0em 1.6em" backgroundColor="vgreen.999" borderWidth='0px' borderRadius='2xl' height="3.3em" width="3em">
+        <Button {...other} onMouseDown={()=>{props.setLetter?.(props.letter);}} boxShadow="2xl" margin="1em 0.5em 1em 0.5em" padding="0em 1.6em 0em 1.6em" backgroundColor="vgreen.999" borderRadius='2xl' height="3.3em" width="3em">
             <Center>
-                <Text marginLeft="-1px" marginTop="3px" fontSize="4xl" fontWeight="bold">{props.letter}</Text>
+                <Text marginTop="3px" marginRight="1px" fontFamily="Varela Round, Helvetica, sans-serif" fontSize="4xl" fontWeight="bold">{props.letter}</Text>
             </Center>
         </Button>
     );
@@ -94,7 +94,7 @@ export const GameBox = (props: { initialWordsUsed: string[], gamePhase: GamePhas
                                 <Box width="100%" display="flex" flexDir="column" alignItems="center">
                                     <Box flexGrow="1" flexWrap="wrap" display="flex" style={{ justifyContent: "space-evenly" }}>
                                         {props.letters.map((l, i) =>
-                                            <MotionBox display="flex" alignItems="center" key={i} initial="hidden" animate="show" variants={smoothIn(0, -10)} transition={{ ...springTransition, delay: i * 0.1 }}>
+                                            <MotionBox display="flex" alignItems="center" key={i} initial="show" animate="show" variants={smoothIn(0, -10)} transition={{ ...springTransition, delay: i * 0.1 }}>
                                                 <LetterBox setLetter={(letter: string) => {setWord((w) => capitalizeFirstLetter((w+letter).replace(/[^a-zA-Z]/gi, '')))}} letter={l} key={i} />
                                             </MotionBox>)}
                                     </Box>
@@ -129,7 +129,7 @@ export const GameBox = (props: { initialWordsUsed: string[], gamePhase: GamePhas
                     size="lg"
                     textAlign="center"
                     placeholder="Type here!" />
-                <Box height="3em" width="7em" position="absolute" top="0em" right="0em" /> {/*Stops input below the buttons */}
+                <Box height="3em" width="6.3em" position="absolute" top="0em" right="0em" /> {/*Stops input below the buttons */}
                 <Button isDisabled={props.gamePhase != "OnGoing"} onClick={() => sendWord()} padding="0 12px 0 12px" position="absolute" borderRadius="1em" right="0.2em" top="0.229em" colorScheme="vgreen" ><Icon boxSize="1.3em" as={IoReturnDownBackOutline} /></Button>
                 <Button isDisabled={props.gamePhase != "OnGoing"} onClick={() => setWord((w) => w.slice(0,-1))} padding="0 12px 0 12px" position="absolute" borderRadius="1em" right="3.2em" top="0.229em"><Icon boxSize="1.3em" as={IoBackspaceOutline} /></Button>
             </MotionBox>
