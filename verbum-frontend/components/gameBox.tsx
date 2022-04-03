@@ -94,7 +94,7 @@ export const GameBox = (props: { initialWordsUsed: string[], gamePhase: GamePhas
                                 <Box width="100%" display="flex" flexDir="column" alignItems="center">
                                     <Box flexGrow="1" flexWrap="wrap" display="flex" style={{ justifyContent: "space-evenly" }}>
                                         {props.letters.map((l, i) =>
-                                            <MotionBox display="flex" alignItems="center" key={i} initial="show" animate="show" variants={smoothIn(0, -10)} transition={{ ...springTransition, delay: i * 0.1 }}>
+                                            <MotionBox display="flex" alignItems="center" key={i} initial="hidden" animate="show" variants={smoothIn(0, -10)} transition={{ ...springTransition, delay: i * 0.1 }}>
                                                 <LetterBox setLetter={(letter: string) => {setWord((w) => capitalizeFirstLetter((w+letter).replace(/[^a-zA-Z]/gi, '')))}} letter={l} key={i} />
                                             </MotionBox>)}
                                     </Box>
