@@ -1,11 +1,12 @@
 import type { NextPage } from 'next'
-import { Box, Center, Input, Container, Button, Heading } from '@chakra-ui/react'
+import { Box, Center, Input, Container, Button, Heading, Text } from '@chakra-ui/react'
 import { useEffect, useState } from 'react';
 import { inBrowser, LS_USERNAME_KEY } from '../logic/utils';
 import { Errors, MatchmakeResponse } from '../logic/entities';
 import { useRouter } from 'next/router';
 import { MotionBox, smoothIn, springTransition } from '../logic/animations';
 import toast from 'react-hot-toast';
+import Head from 'next/head';
 
 const MAX_USERNAME_LENGTH = 20;
 
@@ -74,6 +75,10 @@ const Home: NextPage = () => {
 
     return (
         <Box w='100%' h='100%'>
+            <Head>
+                <title>Verbum.io | Multiplayer Word Game</title>
+                <meta name="robots" content="index, follow"/>
+            </Head>
             <Container h='100%' maxW='container.sm'>
                 <Center h='100%' flexDir='column'>
                     <MotionBox initial="hidden" animate="show" variants={smoothIn(0, -50)} transition={springTransition} display="flex" marginTop="-7em" marginBottom="0.5em">

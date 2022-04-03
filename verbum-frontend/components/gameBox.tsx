@@ -15,9 +15,9 @@ export const LetterBox = (props: LetterBoxProps) => {
     var {letter,setLetter, ...other} = props;
 
     return (
-        <Button {...other} onClick={()=>{props.setLetter?.(props.letter);}} boxShadow="2xl" margin="1em 0.5em 1em 0.5em" padding="0em 1.6em 0em 1.6em" backgroundColor="vgreen.999" borderWidth='0px' borderRadius='2xl' height="3.3em" width="3em">
+        <Button {...other} onMouseDown={()=>{props.setLetter?.(props.letter);}} boxShadow="2xl" margin="1em 0.5em 1em 0.5em" padding="0em 1.6em 0em 1.6em" backgroundColor="vgreen.999" borderWidth='0px' borderRadius='2xl' height="3.3em" width="3em">
             <Center>
-                <Text fontSize="4xl" fontWeight="bold">{props.letter}</Text>
+                <Text marginLeft="-1px" marginTop="3px" fontSize="4xl" fontWeight="bold">{props.letter}</Text>
             </Center>
         </Button>
     );

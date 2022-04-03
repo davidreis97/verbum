@@ -14,6 +14,8 @@ const Background = dynamic(
   { ssr: false },
 )
 import '../styles/global.css'
+import '@fontsource/varela-round'
+import Script from 'next/script';
 
 const env = process.env.NODE_ENV
 if (env == "production") {
@@ -59,6 +61,10 @@ const theme = extendTheme({
       }
     })
   },
+  fonts: {
+    heading: 'Varela Round, Helvetica, sans-serif',
+    body: 'Varela Round, Helvetica, sans-serif',
+  },
 });
 
 var toastOptions: DefaultToastOptions = {
@@ -87,14 +93,29 @@ var toastOptions: DefaultToastOptions = {
   }
 }
 
+/*
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4808094159151738"
+     crossorigin="anonymous"></script>
+
+*/
+
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <ChakraProvider theme={theme}>
       <Head>
-        <title>Verbum.io</title>
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+        <meta name="description" content="Verbum.io | Try to form as many words as possible. Play live against random people or share a game link with your friends!"/>
+        <meta property="og:title" content="Verbum.io | Multiplayer Word Game" />
+        <meta property="og:description" content="Try to form as many words as possible. Play live against random people or share a game link with your friends!" />
+        <meta property="og:image" content="/image.png" />
+        <meta property="og:url" content="https://verbum.davidreis.me" />
+        <meta name="twitter:title" content="Verbum.io | Multiplayer Word Game"/>
+        <meta name="twitter:description" content="Try to form as many words as possible. Play live against random people or share a game link with your friends!"/>
+        <meta name="twitter:image" content="/image.png"/>
       </Head>
 
+      <Script id="Adsense" async crossOrigin="anonymous" src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4808094159151738"/>
+          
       <Background/>
 
       <Box display="flex" flexDirection="column">

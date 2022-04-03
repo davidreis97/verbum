@@ -18,6 +18,7 @@ const VerbumConfetti = dynamic(
     { ssr: false },
 )
 import toast from "react-hot-toast";
+import Head from "next/head";
 
 type GameState = {
     gamePhase: GamePhase,
@@ -293,6 +294,10 @@ const Game: NextPage = () => {
 
     return (
         <Center w='100%' h='100%' flexDirection="column" justifyContent="space-between">
+            <Head>
+                <title>Verbum.io | In Game</title>
+                <meta name="robots" content="noindex, follow"/>
+            </Head>
             <VerbumConfetti run={state.gamePhase == "Finished" && state.userPlace == 1}/>   
             <MotionBox initial="hidden" animate="show" variants={smoothIn(0, -10)} transition={{ ...springTransition}} display="flex" marginTop="1em">
                 <Button variant="unstyled" onClick={() => router.push("/")}>
