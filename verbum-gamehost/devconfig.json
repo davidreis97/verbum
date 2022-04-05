@@ -1,7 +1,7 @@
 {
-    "finished_timer": "15",
-    "ongoing_timer": "90",
     "starting_timer": "15",
+    "ongoing_timer": "90",
+    "finished_timer": "15",
     "allowed_origins": ["http://localhost:3000"],
     "wordlist": "./output_with_words_60.json",
     "max_players": "10",

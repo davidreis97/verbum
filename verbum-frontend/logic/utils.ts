@@ -23,3 +23,22 @@ export const getWindowDimensions = () => {
         height
     };
 }
+
+export function capitalizeFirstLetter(s: string) {
+    return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+}
+
+const english_ordinal_rules = new Intl.PluralRules("en", { type: "ordinal" });
+const suffixes = {
+    zero: "",
+    one: "st",
+    two: "nd",
+    few: "rd",
+    many: "",
+    other: "th"
+};
+
+export function ordinal(n: number) {
+    const suffix = suffixes[english_ordinal_rules.select(n)]
+    return (n + suffix)
+}

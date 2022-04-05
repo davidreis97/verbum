@@ -5,6 +5,8 @@ import { MotionBox, MotionText, smoothIn, springTransition, successIn } from "..
 import { Timer } from "./timer";
 import toast from "react-hot-toast";
 import { IoReturnDownBackOutline, IoBackspaceOutline } from "react-icons/io5"
+import { AllWordsPlayed, SelfWordsPlayed } from "./wordsPlayed";
+import { capitalizeFirstLetter, ordinal } from "../logic/utils";
 
 interface LetterBoxProps extends ButtonProps {
     letter: string,
@@ -23,7 +25,7 @@ export const LetterBox = (props: LetterBoxProps) => {
     );
 }
 
-export const GameBox = (props: { initialWordsUsed: string[], gamePhase: GamePhase, phaseDuration: number, phaseStart: number, letters: string[], sendAttempt: (word: string) => Promise<[boolean, number]>, userPlace: number }) => {
+export const GameBox = (props: { allWordsPlayed:{[username: string]: string[]}, initialWordsUsed: string[], gamePhase: GamePhase, phaseDuration: number, phaseStart: number, letters: string[], sendAttempt: (word: string) => Promise<[boolean, number]>, userPlace: number }) => {
     var [wordsUsed, setWordsUsed] = useState<string[]>(props.initialWordsUsed);
     var [word, setWord] = useState<string>("");
 
@@ -133,34 +135,7 @@ export const GameBox = (props: { initialWordsUsed: string[], gamePhase: GamePhas
                 <Button isDisabled={props.gamePhase != "OnGoing"} onClick={() => sendWord()} padding="0 12px 0 12px" position="absolute" borderRadius="1em" right="0.2em" top="0.229em" colorScheme="vgreen" ><Icon boxSize="1.3em" as={IoReturnDownBackOutline} /></Button>
                 <Button isDisabled={props.gamePhase != "OnGoing"} onClick={() => setWord((w) => w.slice(0,-1))} padding="0 12px 0 12px" position="absolute" borderRadius="1em" right="3.2em" top="0.229em"><Icon boxSize="1.3em" as={IoBackspaceOutline} /></Button>
             </MotionBox>
-            <MotionBox layout boxShadow="2xl" backgroundColor="#2C394B" borderRadius="2xl" padding="1em">
-                <MotionText fontWeight="bold" color="gray.400" fontSize="xs">{wordsUsed.length == 0 ? "NO WORDS PLAYED YET" : "WORDS PLAYED"}</MotionText>
-                <Wrap marginTop="0.6em">
-                    {wordsUsed.map((s, i) =>
-                        <WrapItem key={i}>
-                            <MotionText initial="hidden" animate="show" variants={successIn()} transition={springTransition} >{capitalizeFirstLetter(s)}</MotionText>
-                        </WrapItem>
-                    )}
-                </Wrap>
-            </MotionBox>
+            {props.gamePhase == "Finished" ? <AllWordsPlayed wordsPlayed={props.allWordsPlayed}/> : <SelfWordsPlayed wordsUsed={wordsUsed}/>}
         </MotionBox>
     )
 };
-
-function capitalizeFirstLetter(s: string) {
-    return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
-}
-
-const english_ordinal_rules = new Intl.PluralRules("en", { type: "ordinal" });
-const suffixes = {
-    zero: "",
-    one: "st",
-    two: "nd",
-    few: "rd",
-    many: "",
-    other: "th"
-};
-function ordinal(n: number) {
-    const suffix = suffixes[english_ordinal_rules.select(n)]
-    return (n + suffix)
-}

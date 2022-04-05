@@ -44,7 +44,8 @@ export interface ScoreChange {
 export interface ToFinished {
     Type: ToFinishedType,
     Timestamp: number,
-    Duration: number
+    Duration: number,
+    WordsPlayed: {[username: string]: string[]}
 }
 
 export interface WordApproved {

@@ -30,7 +30,8 @@ type GameState = {
     userPlace: number,
     // If the player is reconnecting, the words that he previously played will be here. 
     // This value will not be kept up to date throughout the game.
-    initialWordsUsed: string[] 
+    initialWordsUsed: string[],
+    allWordsPlayed: {[username: string]: string[]}
 };
 
 const Game: NextPage = () => {
@@ -42,7 +43,8 @@ const Game: NextPage = () => {
         letters: [],
         client: null,
         userPlace: 1,
-        initialWordsUsed: []
+        initialWordsUsed: [],
+        allWordsPlayed: {}
     });
     const router = useRouter();
     const gameId = router.query['gameId'];
@@ -165,6 +167,7 @@ const Game: NextPage = () => {
             gamePhase: "Finished",
             phaseDuration: msg.Duration,
             phaseStart: msg.Timestamp,
+            allWordsPlayed: msg.WordsPlayed
         }));
     }
 
@@ -175,6 +178,7 @@ const Game: NextPage = () => {
             letters: msg.Letters.map(n => String.fromCharCode(n)),
             phaseDuration: msg.Duration,
             phaseStart: msg.Timestamp,
+            allWordsPlayed: {}
         }));
     }
 
@@ -312,7 +316,7 @@ const Game: NextPage = () => {
                     </Button>
                 </MotionBox>
                 <MotionBox initial="hidden" animate="show" variants={smoothIn(0, -50)} transition={springTransition} layout display="flex" flexWrap="wrap" justifyContent="center">
-                    <GameBox initialWordsUsed={state.initialWordsUsed} gamePhase={state.gamePhase} phaseDuration={state.phaseDuration} phaseStart={new Date().getTime() / 1000 - state.phaseStart} letters={state.letters} sendAttempt={sendAttempt} userPlace={state.userPlace} />
+                    <GameBox allWordsPlayed={state.allWordsPlayed} initialWordsUsed={state.initialWordsUsed} gamePhase={state.gamePhase} phaseDuration={state.phaseDuration} phaseStart={new Date().getTime() / 1000 - state.phaseStart} letters={state.letters} sendAttempt={sendAttempt} userPlace={state.userPlace} />
                     <ScoreTable players={state.players} />
                 </MotionBox>
             </Container>

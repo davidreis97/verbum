@@ -153,6 +153,22 @@ func (r *Room) ResetPlayers() {
 	}
 }
 
+func (r *Room) GenerateWordsPlayed() map[string][]string {
+	wordsPlayed := make(map[string][]string)
+
+	for name, player := range r.players {
+		playerWords := make([]string, len(player.wordsAttempted))
+		i := 0
+		for k := range player.wordsAttempted {
+			playerWords[i] = k
+			i++
+		}
+		wordsPlayed[name] = playerWords
+	}
+
+	return wordsPlayed
+}
+
 func (r *Room) RunGame(wl *WordList) {
 	r.state = Starting
 	_, err := r.BroadcastPayload(GenToStarting())
@@ -177,7 +193,7 @@ func (r *Room) RunGame(wl *WordList) {
 	time.Sleep(viper.GetDuration("ongoing_timer") * time.Second)
 
 	r.state = Finished
-	_, err = r.BroadcastPayload(GenToFinished())
+	_, err = r.BroadcastPayload(GenToFinished(r.GenerateWordsPlayed()))
 	if err != nil {
 		log.Println(err.Error())
 		return

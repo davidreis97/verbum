@@ -68,13 +68,14 @@ func GenScoreChange(playerName string, scoreDiff int) scoreChange {
 //ToFinished
 
 type toFinished struct {
-	Type      string
-	Timestamp int64
-	Duration  int
+	Type        string
+	Timestamp   int64
+	Duration    int
+	WordsPlayed map[string][]string
 }
 
-func GenToFinished() toFinished {
-	return toFinished{Type: "ToFinished", Timestamp: time.Now().Unix(), Duration: viper.GetInt("finished_timer")}
+func GenToFinished(wordsPlayed map[string][]string) toFinished {
+	return toFinished{Type: "ToFinished", Timestamp: time.Now().Unix(), Duration: viper.GetInt("finished_timer"), WordsPlayed: wordsPlayed}
 }
 
 //WordApproved
