@@ -87,7 +87,7 @@ const Home: NextPage = () => {
                     </MotionBox>
                     <MotionBox initial="hidden" animate="show" variants={smoothIn(0, -50)} transition={springTransition} display="flex" w="100%">
                         <Input isInvalid={username.length > MAX_USERNAME_LENGTH} onKeyDown={(e) => { if (e.key == "Enter") matchmake() }} focusBorderColor="vgreen.500" placeholder='Username' marginRight="1em" size="lg" onChange={(evt) => setUsername((_) => evt.target.value)} value={username} />
-                        <Button isLoading={loadingMatchmaking} _hover={{ bg: 'vgreen.600' }} _active={{ bg: 'vgreen.600' }} backgroundColor="vgreen.500" size="lg" onClick={() => matchmake()}>PLAY</Button>
+                        <Button isLoading={loadingMatchmaking} _hover={{ bg: 'vgreen.600' }} _active={{ bg: 'vgreen.600' }} backgroundColor="vgreen.500" size="lg" onClick={() => matchmake()}>{gameId != null ? "JOIN" : "PLAY"}</Button>
                     </MotionBox>
                 </Center>
             </Container>
