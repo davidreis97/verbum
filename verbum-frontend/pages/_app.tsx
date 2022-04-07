@@ -112,7 +112,6 @@ function MyApp({ Component, pageProps }: AppProps) {
         <meta name="twitter:title" content="Verbum.io | Multiplayer Word Game"/>
         <meta name="twitter:description" content="Try to form as many words as possible. Play live against random people or share a game link with your friends!"/>
         <meta name="twitter:image" content="/image.png"/>
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4808094159151738" crossOrigin="anonymous"></script>
       </Head>
           
       <Background/>
