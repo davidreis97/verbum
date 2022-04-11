@@ -8,6 +8,13 @@ import (
 	"github.com/spf13/viper"
 )
 
+func init() {
+	InitializeDefaults()
+	//config.save() // Uncomment to save default values to file (OVERWRITES EXISTING FILE)
+	Load()
+	Watch()
+}
+
 func InitializeDefaults() {
 	viper.SetDefault("starting_timer", "15")
 	viper.SetDefault("ongoing_timer", "120")
@@ -21,13 +28,17 @@ func InitializeDefaults() {
 	viper.SetDefault("tls_key", "")
 }
 
+func IsProd() bool {
+	return os.Getenv("ENV") == "PRODUCTION"
+}
+
 func Load() {
 	viper.SetConfigType("json")
 	viper.AddConfigPath("/etc/verbum-gamehost/")  // path to look for the config file in
 	viper.AddConfigPath("$HOME/.verbum-gamehost") // call multiple times to add many search paths
 	viper.AddConfigPath(".")
 
-	if os.Getenv("ENV") == "PRODUCTION" {
+	if IsProd() {
 		viper.SetConfigName("config")
 	} else {
 		viper.SetConfigName("devconfig")

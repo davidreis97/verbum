@@ -1,12 +1,13 @@
-package model
+package logic
 
 import (
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"math/rand"
 	"sort"
 	"strings"
+
+	"github.com/davidreis97/verbum/verbum-gamehost/src/log"
 )
 
 type WordList struct {
@@ -18,7 +19,7 @@ type WordSet struct {
 	Words     []string
 }
 
-func Load(filepath string) (*WordList, error) {
+func LoadWordlist(filepath string) (*WordList, error) {
 	content, err := ioutil.ReadFile(filepath)
 	if err != nil {
 		return nil, err
@@ -27,7 +28,7 @@ func Load(filepath string) (*WordList, error) {
 	var wl WordList
 	json.Unmarshal([]byte(content), &wl)
 
-	log.Printf("Loaded %d word sets from file %s", len(wl.WordSet), filepath)
+	log.Logger.Sugar().Infow("Loaded word sets from file", "wordsetCount", len(wl.WordSet), "filepath", filepath)
 
 	return &wl, nil
 }

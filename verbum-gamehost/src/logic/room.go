@@ -1,14 +1,15 @@
-package model
+package logic
 
 import (
 	"encoding/json"
 	"errors"
-	"log"
 	"math/rand"
 	"time"
 	"unsafe"
 
 	"github.com/centrifugal/centrifuge"
+	"github.com/davidreis97/verbum/verbum-gamehost/src/log"
+	"github.com/davidreis97/verbum/verbum-gamehost/src/messages"
 	"github.com/spf13/viper"
 )
 
@@ -45,7 +46,7 @@ func NewRoom(node *centrifuge.Node, wl *WordList) *Room {
 	r.node = node
 	r.players = make(map[string]*Player)
 
-	log.Println("Created new unstarted room with id " + r.Id)
+	log.Logger.Sugar().Debugw("Created new unstarted room", "roomId", r.Id)
 
 	return r
 }
@@ -55,16 +56,16 @@ func (r *Room) RegenLetters(wl *WordList) {
 }
 
 func (r *Room) ProcessWordAttempt(data *[]byte, player string) *centrifuge.RPCReply {
-	var attempt WordAttempt
+	var attempt messages.WordAttempt
 	json.Unmarshal(*data, &attempt)
 	valid, points := r.AttemptWord(player, attempt.Word)
 
 	if valid {
 		r.AddPoints(player, points)
-		payload, _ := json.Marshal(GenWordApproved(points))
+		payload, _ := json.Marshal(messages.GenWordApproved(points))
 		return &centrifuge.RPCReply{Data: payload}
 	} else {
-		payload, _ := json.Marshal(GenWordRejected())
+		payload, _ := json.Marshal(messages.GenWordRejected())
 		return &centrifuge.RPCReply{Data: payload}
 	}
 }
@@ -87,7 +88,7 @@ func (r *Room) AttemptWord(player string, word string) (bool, int) {
 func (r *Room) AddPoints(player string, scoreDiff int) {
 	r.players[player].score += scoreDiff
 
-	r.BroadcastPayload(GenScoreChange(player, scoreDiff))
+	r.BroadcastPayload(messages.GenScoreChange(player, scoreDiff))
 }
 
 func (r *Room) AddPlayer(playerName string) ([]string, error) {
@@ -120,7 +121,7 @@ func (r *Room) AddPlayer(playerName string) ([]string, error) {
 
 	r.players[playerName] = p
 
-	r.BroadcastPayload(GenPlayerEnter(playerName))
+	r.BroadcastPayload(messages.GenPlayerEnter(playerName))
 
 	return wordsSoFar, nil
 }
@@ -128,7 +129,7 @@ func (r *Room) AddPlayer(playerName string) ([]string, error) {
 func (r *Room) DropPlayer(playerName string) {
 	if p, exists := r.players[playerName]; exists {
 		p.connected = false
-		r.BroadcastPayload(GenPlayerExit(playerName))
+		r.BroadcastPayload(messages.GenPlayerExit(playerName))
 	}
 }
 
@@ -137,7 +138,7 @@ func (r *Room) BroadcastPayload(message interface{}) (*centrifuge.PublishResult,
 	if err != nil {
 		return nil, err
 	}
-	log.Println("Sent " + string(jsonMessage) + " in room id " + r.Id)
+	log.Logger.Sugar().Debugw("Sent message", "message", string(jsonMessage), "roomId", r.Id)
 	result, err := r.node.Publish(r.Id, jsonMessage, centrifuge.WithHistory(9999, 4*time.Minute))
 	return &result, err
 }
@@ -171,31 +172,29 @@ func (r *Room) GenerateWordsPlayed() map[string][]string {
 
 func (r *Room) RunGame(wl *WordList) {
 	r.state = Starting
-	_, err := r.BroadcastPayload(GenToStarting())
+	_, err := r.BroadcastPayload(messages.GenToStarting())
 	if err != nil {
-		log.Println(err.Error())
+		log.Logger.Error(err.Error())
 		return
 	}
-
-	//log.Println("Game started in room id " + strconv.FormatInt(r.id, 10))
 
 	time.Sleep(viper.GetDuration("starting_timer") * time.Second)
 
 	r.state = OnGoing
 
-	_, err = r.BroadcastPayload(GenToOnGoing([]rune(r.wordSet.LetterSet)))
+	_, err = r.BroadcastPayload(messages.GenToOnGoing([]rune(r.wordSet.LetterSet)))
 
 	if err != nil {
-		log.Println(err.Error())
+		log.Logger.Error(err.Error())
 		return
 	}
 
 	time.Sleep(viper.GetDuration("ongoing_timer") * time.Second)
 
 	r.state = Finished
-	_, err = r.BroadcastPayload(GenToFinished(r.GenerateWordsPlayed()))
+	_, err = r.BroadcastPayload(messages.GenToFinished(r.GenerateWordsPlayed()))
 	if err != nil {
-		log.Println(err.Error())
+		log.Logger.Error(err.Error())
 		return
 	}
 
