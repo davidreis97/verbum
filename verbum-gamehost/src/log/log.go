@@ -10,7 +10,11 @@ var Logger *zap.Logger
 
 func init() {
 	if config.IsProd() {
-		Logger, _ = zap.NewProduction()
+		config := zap.NewProductionConfig()
+		config.OutputPaths = []string{"stdout"}
+		config.Level = zap.NewAtomicLevelAt(zap.DebugLevel)
+
+		Logger, _ = config.Build()
 	} else {
 		Logger, _ = zap.NewDevelopment()
 	}
