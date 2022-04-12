@@ -56,7 +56,7 @@ func main() {
 	roomManager := logic.NewRoomManager(node, wordlist)
 
 	node.OnConnecting(func(ctx context.Context, evt centrifuge.ConnectEvent) (centrifuge.ConnectReply, error) {
-		if len(evt.Name) < 0 || len(evt.Name) > 20 {
+		if len(evt.Name) <= 0 || len(evt.Name) > 20 {
 			return centrifuge.ConnectReply{}, centrifuge.ErrorBadRequest
 		}
 

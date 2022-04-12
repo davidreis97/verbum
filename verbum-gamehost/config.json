@@ -1,7 +1,7 @@
 {
-    "starting_timer": "15",
+    "starting_timer": "11",
     "ongoing_timer": "90",
-    "finished_timer": "12",
+    "finished_timer": "17",
     "allowed_origins": ["https://verbum.davidreis.me"],
     "wordlist": "./output_with_words_60.json",
     "max_players": "10",

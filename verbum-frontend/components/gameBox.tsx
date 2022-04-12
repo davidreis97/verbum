@@ -40,18 +40,22 @@ export const GameBox = (props: { allWordsPlayed:{[username: string]: string[]}, 
 
     function sendWord() {
         if (state.word.length > 0) {
+            console.log("big enough");
             if (state.word.at(-1) == "s") {
+                console.log("plural");
                 toast.error('Plural with "s" not allowed.');
                 return;
             }
 
             if (state.wordsUsed.includes(state.word)) {
+                console.log("already");
                 toast.error('Word already played.');
                 return;
             }
 
             for (var i = 0; i < state.word.length; i++) {
                 if (!props.letters.includes(state.word.charAt(i).toUpperCase())) {
+                    console.log("not in set");
                     toast.error(`Letter "${state.word.charAt(i)}" not in game set.`);
                     return;
                 }
@@ -59,8 +63,10 @@ export const GameBox = (props: { allWordsPlayed:{[username: string]: string[]}, 
 
             props.sendAttempt(state.word).then(([validWord, _]) => {
                 if (validWord) {
+                    console.log("valid, set state");
                     setState((s) => ({word: "", wordsUsed: [...s.wordsUsed, state.word]}));
                 }else{
+                    console.log("not in word list");
                     toast.error(`"${state.word}" not in word list.`);
                 }
             }).catch((e) => {
@@ -68,6 +74,7 @@ export const GameBox = (props: { allWordsPlayed:{[username: string]: string[]}, 
                 toast.error(`Unspecified error.`);
             });            
         }else{
+            console.log("not big enough");
             toast.error(`Type a word to play!`);
         }
     }
