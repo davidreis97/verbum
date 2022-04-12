@@ -18,7 +18,7 @@ print("Possible Sets: ", len(possibleSets))
 words = []
 
 with open(sys.argv[1]) as f:
-    words = list([(frozenset(word.upper()), word) for word in filter(lambda word: not word.endswith('s') and len(word) > 1, f.read().splitlines())])
+    words = list([(frozenset(word.upper()), word) for word in filter(lambda word: len(word) > 2, f.read().splitlines())])
 
 print("File processed ", len(words), " words")
 
