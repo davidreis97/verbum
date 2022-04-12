@@ -26,49 +26,47 @@ export const LetterBox = (props: LetterBoxProps) => {
 }
 
 export const GameBox = (props: { allWordsPlayed:{[username: string]: string[]}, initialWordsUsed: string[], gamePhase: GamePhase, phaseDuration: number, phaseStart: number, letters: string[], sendAttempt: (word: string) => Promise<[boolean, number]>, userPlace: number }) => {
-    var [wordsUsed, setWordsUsed] = useState<string[]>(props.initialWordsUsed);
-    var [word, setWord] = useState<string>("");
+    var [state, setState] = useState<{wordsUsed: string[], word: string}>({wordsUsed: props.initialWordsUsed, word: ""});
 
     useEffect(() => {
         if(props.gamePhase == "Starting"){
-            setWordsUsed(() => []);
-            setWord(() => "");
+            setState(() => ({wordsUsed: [], word: ""}));
         }
     }, [props.gamePhase]);
 
     useEffect(() => {
-        setWordsUsed(() => props.initialWordsUsed);
+        setState((s) => ({...s, wordsUsed: props.initialWordsUsed}));
     }, [props.initialWordsUsed]);
 
-    async function sendWord(): Promise<void> {
-        console.log("In Send Word");
-        if (word.length > 0) {
-            console.log("Word is larger");
-            if (word.at(-1) == "s") {
+    function sendWord() {
+        if (state.word.length > 0) {
+            if (state.word.at(-1) == "s") {
                 toast.error('Plural with "s" not allowed.');
                 return;
             }
 
-            if (wordsUsed.includes(word)) {
+            if (state.wordsUsed.includes(state.word)) {
                 toast.error('Word already played.');
                 return;
             }
 
-            for (var i = 0; i < word.length; i++) {
-                if (!props.letters.includes(word.charAt(i).toUpperCase())) {
-                    toast.error(`Letter "${word.charAt(i)}" not in game set.`);
+            for (var i = 0; i < state.word.length; i++) {
+                if (!props.letters.includes(state.word.charAt(i).toUpperCase())) {
+                    toast.error(`Letter "${state.word.charAt(i)}" not in game set.`);
                     return;
                 }
             }
 
-            var [validWord, _] = await props.sendAttempt(word);
-            if (validWord) {
-                setWordsUsed((wordsUsed) => [...wordsUsed, word]);
-                setWord(() => "");
-                return;
-            }
-
-            toast.error(`"${word}" not in word list.`);
+            props.sendAttempt(state.word).then(([validWord, _]) => {
+                if (validWord) {
+                    setState((s) => ({word: "", wordsUsed: [...s.wordsUsed, state.word]}));
+                }else{
+                    toast.error(`"${state.word}" not in word list.`);
+                }
+            }).catch((e) => {
+                console.error(e);
+                toast.error(`Unspecified error.`);
+            });            
         }else{
             toast.error(`Type a word to play!`);
         }
@@ -99,7 +97,7 @@ export const GameBox = (props: { allWordsPlayed:{[username: string]: string[]}, 
                                     <Box flexGrow="1" flexWrap="wrap" display="flex" style={{ justifyContent: "space-evenly" }}>
                                         {props.letters.map((l, i) =>
                                             <MotionBox display="flex" alignItems="center" key={i} initial="hidden" animate="show" variants={smoothIn(0, -10)} transition={{ ...springTransition, delay: i * 0.1 }}>
-                                                <LetterBox setLetter={(letter: string) => {setWord((w) => capitalizeFirstLetter((w+letter).replace(/[^a-zA-Z]/gi, '')))}} letter={l} key={i} />
+                                                <LetterBox setLetter={(letter: string) => {setState((s) => ({...s, word:capitalizeFirstLetter((s.word+letter).replace(/[^a-zA-Z]/gi, ''))}))}} letter={l} key={i} />
                                             </MotionBox>)}
                                     </Box>
                                     <Timer key={1} growing={false} initialTime={props.phaseStart} time={props.phaseDuration} withWarning={true} />
@@ -125,8 +123,8 @@ export const GameBox = (props: { allWordsPlayed:{[username: string]: string[]}, 
                     focusBorderColor="vgreen.999"
                     backgroundColor="#2C394B"
                     borderRadius="2xl"
-                    value={word}
-                    onChange={(e) => setWord(() => capitalizeFirstLetter(e.target.value.replace(/[^a-zA-Z]/gi, '')))}
+                    value={state.word}
+                    onChange={(e) => setState((s) => ({...s,word: capitalizeFirstLetter(e.target.value.replace(/[^a-zA-Z]/gi, ''))}))}
                     onKeyDown={(e) => e.key == "Enter" ? sendWord() : null}
                     isDisabled={props.gamePhase != "OnGoing"}
                     variant="filled"
@@ -135,9 +133,9 @@ export const GameBox = (props: { allWordsPlayed:{[username: string]: string[]}, 
                     placeholder="Type here!" />
                 <Box height="3em" width="6.3em" position="absolute" top="0em" right="0em" /> {/*Stops input below the buttons */}
                 <Button isDisabled={props.gamePhase != "OnGoing"} onClick={() => {console.log("OnCLick");sendWord();}} padding="0 12px 0 12px" position="absolute" borderRadius="1em" right="0.2em" top="0.229em" colorScheme="vgreen" ><Icon boxSize="1.3em" as={IoReturnDownBackOutline} /></Button>
-                <Button isDisabled={props.gamePhase != "OnGoing"} onClick={() => setWord((w) => w.slice(0,-1))} padding="0 12px 0 12px" position="absolute" borderRadius="1em" right="3.2em" top="0.229em"><Icon boxSize="1.3em" as={IoBackspaceOutline} /></Button>
+                <Button isDisabled={props.gamePhase != "OnGoing"} onClick={() => setState((s) => ({...s,word:s.word.slice(0,-1)}))} padding="0 12px 0 12px" position="absolute" borderRadius="1em" right="3.2em" top="0.229em"><Icon boxSize="1.3em" as={IoBackspaceOutline} /></Button>
             </MotionBox>
-            {props.gamePhase == "Finished" ? <AllWordsPlayed wordsPlayed={props.allWordsPlayed}/> : <SelfWordsPlayed wordsUsed={wordsUsed}/>}
+            {props.gamePhase == "Finished" ? <AllWordsPlayed wordsPlayed={props.allWordsPlayed}/> : <SelfWordsPlayed wordsUsed={state.wordsUsed}/>}
         </MotionBox>
     )
 };

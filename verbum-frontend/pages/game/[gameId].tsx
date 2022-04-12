@@ -201,7 +201,6 @@ const Game: NextPage = () => {
     }
 
     function wordsSoFar(data: WordsSoFar) {
-        console.log("THINGS");
         setState((s) => ({...s, initialWordsUsed: data.Words}));
     }    
 
