@@ -15,11 +15,10 @@ const Background = dynamic(
 )
 import '../styles/global.css'
 import '@fontsource/varela-round'
-import Script from 'next/script';
 
 const env = process.env.NODE_ENV
 if (env == "production") {
-  console.log = () => { }
+  //console.log = () => { }
 }
 
 const theme = extendTheme({

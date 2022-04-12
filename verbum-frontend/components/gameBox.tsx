@@ -41,7 +41,9 @@ export const GameBox = (props: { allWordsPlayed:{[username: string]: string[]}, 
     }, [props.initialWordsUsed]);
 
     async function sendWord(): Promise<void> {
+        console.log("In Send Word");
         if (word.length > 0) {
+            console.log("Word is larger");
             if (word.at(-1) == "s") {
                 toast.error('Plural with "s" not allowed.');
                 return;
@@ -132,7 +134,7 @@ export const GameBox = (props: { allWordsPlayed:{[username: string]: string[]}, 
                     textAlign="center"
                     placeholder="Type here!" />
                 <Box height="3em" width="6.3em" position="absolute" top="0em" right="0em" /> {/*Stops input below the buttons */}
-                <Button isDisabled={props.gamePhase != "OnGoing"} onClick={() => sendWord()} padding="0 12px 0 12px" position="absolute" borderRadius="1em" right="0.2em" top="0.229em" colorScheme="vgreen" ><Icon boxSize="1.3em" as={IoReturnDownBackOutline} /></Button>
+                <Button isDisabled={props.gamePhase != "OnGoing"} onClick={() => {console.log("OnCLick");sendWord();}} padding="0 12px 0 12px" position="absolute" borderRadius="1em" right="0.2em" top="0.229em" colorScheme="vgreen" ><Icon boxSize="1.3em" as={IoReturnDownBackOutline} /></Button>
                 <Button isDisabled={props.gamePhase != "OnGoing"} onClick={() => setWord((w) => w.slice(0,-1))} padding="0 12px 0 12px" position="absolute" borderRadius="1em" right="3.2em" top="0.229em"><Icon boxSize="1.3em" as={IoBackspaceOutline} /></Button>
             </MotionBox>
             {props.gamePhase == "Finished" ? <AllWordsPlayed wordsPlayed={props.allWordsPlayed}/> : <SelfWordsPlayed wordsUsed={wordsUsed}/>}
