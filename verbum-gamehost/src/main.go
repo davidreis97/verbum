@@ -133,7 +133,7 @@ func main() {
 		log.Logger.Sugar().Fatal(err)
 	}
 
-	httpServer := gin.Default()
+	httpServer := gin.New()
 
 	config := cors.DefaultConfig()
 	config.AllowOrigins = viper.GetStringSlice("allowed_origins")
