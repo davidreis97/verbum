@@ -40,7 +40,7 @@ export const GameBox = (props: { allWordsPlayed:{[username: string]: string[]}, 
 
     function sendWord() {
         if (state.word.length < 3) {
-            toast.error(`Words must be 3 characters long.`);
+            toast.error(`Words must be at least 3 characters long.`);
             return;
         }
 
