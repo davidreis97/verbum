@@ -18,7 +18,7 @@ import '@fontsource/varela-round'
 
 const env = process.env.NODE_ENV
 if (env == "production") {
-  //console.log = () => { }
+  console.log = () => { }
 }
 
 const theme = extendTheme({
