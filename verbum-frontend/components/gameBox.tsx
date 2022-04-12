@@ -41,11 +41,7 @@ export const GameBox = (props: { allWordsPlayed:{[username: string]: string[]}, 
     function sendWord() {
         if (state.word.length > 0) {
             console.log("big enough");
-            if (state.word.at(-1) == "s") {
-                console.log("plural");
-                toast.error('Plural with "s" not allowed.');
-                return;
-            }
+            
 
             if (state.wordsUsed.includes(state.word)) {
                 console.log("already");
