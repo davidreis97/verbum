@@ -6,7 +6,7 @@
     "description": "Try to form as many words as possible. Play live against random people or share a game link with your friends!",
     "orientation": "portrait",
     "scope": "/",
-    "start_url": "verbum.davidreis.me",
+    "start_url": "/",
     "name": "Verbum.io",
     "short_name": "Verbum",
     "icons": [
