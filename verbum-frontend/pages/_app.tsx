@@ -15,6 +15,7 @@ const Background = dynamic(
 )
 import '../styles/global.css'
 import '@fontsource/varela-round'
+import { useEffect } from 'react';
 
 const env = process.env.NODE_ENV
 if (env == "production") {
@@ -99,6 +100,22 @@ var toastOptions: DefaultToastOptions = {
 */
 
 function MyApp({ Component, pageProps }: AppProps) {
+
+  useEffect(() => {
+    if(navigator != null && "serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+       navigator.serviceWorker.register("/sw.js", {scope:"/"}).then(
+          function (registration) {
+            console.log("Service Worker registration successful with scope: ", registration.scope);
+          },
+          function (err) {
+            console.log("Service Worker registration failed: ", err);
+          }
+        );
+      });
+    }
+  }, [])
+
   return (
     <ChakraProvider theme={theme}>
       <Head>
@@ -111,6 +128,8 @@ function MyApp({ Component, pageProps }: AppProps) {
         <meta name="twitter:title" content="Verbum.io | Multiplayer Word Game"/>
         <meta name="twitter:description" content="Try to form as many words as possible. Play live against random people or share a game link with your friends!"/>
         <meta name="twitter:image" content="/image.png"/>
+        <link rel="manifest" href="/manifest.webmanifest" />
+        <meta name="theme-color" content="#171F2B" />
       </Head>
           
       <Background/>

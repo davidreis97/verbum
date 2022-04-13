@@ -2,7 +2,7 @@ import { Center, Text, Link, Box, Button } from "@chakra-ui/react";
 import Image from "next/image";
 
 const Footer = () => (
-    <Center flexDirection="column" height="6em">
+    <Center flexDirection="column" height="6.5em">
         <Center paddingBottom="1em">
             <Button onClick={() => window.open("https://ko-fi.com/davidreis", '_blank')?.focus()}>
                 Buy me a ☕
