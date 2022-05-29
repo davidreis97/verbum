@@ -1,0 +1,11 @@
+[Unit]
+Description=verbum-gamehost
+
+[Service]
+ExecStart=/home/ubuntu/verbum/verbum-gamehost/bin/main
+WorkingDirectory=/home/ubuntu/verbum/verbum-gamehost/
+
+Environment=ENV=PRODUCTION GIN_MODE=release
+
+[Install]
+WantedBy=multi-user.target

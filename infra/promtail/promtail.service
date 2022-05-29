@@ -1,0 +1,9 @@
+[Unit]
+Description=promtail
+
+[Service]
+ExecStart=/home/ubuntu/promtail/promtail -config.file config.yaml
+WorkingDirectory=/home/ubuntu/promtail
+
+[Install]
+WantedBy=multi-user.target

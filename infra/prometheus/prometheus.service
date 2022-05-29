@@ -1,0 +1,9 @@
+[Unit]
+Description=prometheus
+
+[Service]
+ExecStart=/home/ubuntu/prometheus/prometheus --config.file=./prometheus.yml
+WorkingDirectory=/home/ubuntu/prometheus
+
+[Install]
+WantedBy=multi-user.target

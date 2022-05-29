@@ -1,0 +1,8 @@
+[Unit]
+Description=node-exporter
+
+[Service]
+ExecStart=/home/ubuntu/node_exporter/node_exporter
+
+[Install]
+WantedBy=multi-user.target
