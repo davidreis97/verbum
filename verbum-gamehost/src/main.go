@@ -96,7 +96,7 @@ func main() {
 				}
 			}
 
-			cb(centrifuge.SubscribeReply{Options: centrifuge.SubscribeOptions{Position: true, Recover: true, RecoverSince: &centrifuge.StreamPosition{Offset: 0}}}, nil)
+			cb(centrifuge.SubscribeReply{Options: centrifuge.SubscribeOptions{EnablePositioning: true, EnableRecovery: true, RecoverSince: &centrifuge.StreamPosition{Offset: 0}}}, nil)
 		})
 
 		client.OnHistory(func(e centrifuge.HistoryEvent, cb centrifuge.HistoryCallback) {
