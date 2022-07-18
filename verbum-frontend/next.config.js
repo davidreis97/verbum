@@ -5,7 +5,7 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
 })
 
 const nextConfig = withBundleAnalyzer({
-  reactStrictMode: true
+  reactStrictMode: false // TODO - Disabled this since centrifuge-js has an issue where calling disconnect does not abort a connection that's about to happen.
 });
 
 module.exports = nextConfig

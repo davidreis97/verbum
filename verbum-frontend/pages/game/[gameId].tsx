@@ -53,7 +53,6 @@ const Game: NextPage = () => {
     var connectionValid : Promise<void>;
     var resolveConnectionPromise: Function;
 
-
     function showConnectingToast() {
         toast.promise(connectionValid, {
             loading: "Connection Lost. Retrying...",
@@ -77,6 +76,7 @@ const Game: NextPage = () => {
                 showConnectingToast();
             }
         });
+        
         client.onConnect(() => {
             if(resolveConnectionPromise != null){
                 resolveConnectionPromise();
@@ -105,6 +105,7 @@ const Game: NextPage = () => {
         setState((state) => ({ ...state, client: client }))
 
         return () => {
+            console.log("Disconnected from room ", gameId);
             client.disconnect();
         }
     }, [gameId]);
